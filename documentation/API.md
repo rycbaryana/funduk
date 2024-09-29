@@ -1,7 +1,7 @@
 #### Get all tasks
 
 ```http
-  GET /api/tasks
+GET /api/tasks
 ```
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
@@ -13,7 +13,7 @@
 #### Get task
 
 ```http
-  GET /api/tasks/${id}
+GET /api/tasks/${id}
 ```
 
 | Parameter | Type     | Description                       |
@@ -24,7 +24,7 @@
 #### Get user
 
 ```http
-  GET /api/users/${id}
+GET /api/users/${id}
 ```
 
 | Parameter | Type     | Description                       |
@@ -34,7 +34,7 @@
 #### Get user submissions
 
 ```http
-  GET /api/users/${id}/submissions
+GET /api/users/${id}/submissions
 ```
 
 | Parameter | Type     | Description                       |
