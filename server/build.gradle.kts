@@ -25,9 +25,6 @@ dependencies {
     implementation(libs.ktor.server.netty)
     testImplementation(libs.ktor.server.tests)
     testImplementation(libs.kotlin.test.junit)
-    implementation("io.ktor:ktor-server-html-builder:$ktorVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-html:0.8.1")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
 
     browserDist(
         project(

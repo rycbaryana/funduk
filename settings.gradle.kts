@@ -26,7 +26,15 @@ dependencyResolutionManagement {
         }
         mavenCentral()
     }
+    versionCatalogs {
+        create("jsLibs") {
+            val wrappersVersion = "0.0.1-pre.814"
+            from("org.jetbrains.kotlin-wrappers:kotlin-wrappers-catalog:$wrappersVersion")
+        }
+    }
 }
+
+
 
 include(":shared")
 include(":client")

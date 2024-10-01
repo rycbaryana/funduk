@@ -2,8 +2,6 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
 }
 
-val coroutinesVersion = libs.versions.coroutines.get()
-
 kotlin {
     js(IR) {
         browser {
@@ -13,7 +11,14 @@ kotlin {
     sourceSets {
         val jsMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutinesVersion")
+                implementation(jsLibs.react)
+                implementation(jsLibs.reactDom)
+                implementation(jsLibs.reactRouterDom)
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:${libs.versions.kotlinx.coroutines.get()}")
+                implementation(libs.ktor.client.contentNegotiation)
+                implementation(libs.ktor.client.js)
+                implementation(libs.ktor.serialization.json)
+                implementation(project(":shared"))
             }
         }
         val jsTest by getting {
