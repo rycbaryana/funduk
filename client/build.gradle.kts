@@ -18,7 +18,7 @@ kotlin {
                 implementation(libs.ktor.client.contentNegotiation)
                 implementation(libs.ktor.client.js)
                 implementation(libs.ktor.serialization.json)
-                implementation(project(":shared"))
+                implementation(projects.shared)
             }
         }
         val jsTest by getting {
