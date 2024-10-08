@@ -25,6 +25,7 @@ dependencies {
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.contentNegotiation)
+    implementation(libs.ktor.server.callLogging)
     implementation(libs.ktor.serialization.json)
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)

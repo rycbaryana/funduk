@@ -20,7 +20,6 @@ fun Route.taskRoutes(service: TaskService) {
         }
         post {
             val task: Task = call.receive()
-            call.application.environment.log.info(task.toString())
             service.add(task)
             call.respond(HttpStatusCode.Created)
         }
