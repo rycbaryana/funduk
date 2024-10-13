@@ -9,6 +9,5 @@ object Tasks : IntIdTable("tasks") {
 
 object Users : IntIdTable("users") {
     val username = varchar("username", 50)
-    val email = varchar("email", 50)
-    val password = varchar("password", 50)
+    val password = varchar("password", 255)
 }

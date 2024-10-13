@@ -5,9 +5,15 @@ import by.funduk.db.Users
 import by.funduk.model.Task
 import by.funduk.routes.taskRoutes
 import by.funduk.plugins.configureDatabase
+import by.funduk.routes.authRoutes
 import by.funduk.services.TaskService
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
@@ -24,11 +30,39 @@ fun main() {
         .start(wait = true)
 }
 
+object AuthConfig {
+    lateinit var secret: String
+    lateinit var issuer: String
+    lateinit var audience: String
+    fun loadConfig() {
+        secret = "secret"
+        issuer = "AuthService"
+        audience = "UserService"
+    }
+}
+
 fun Application.module() {
+    AuthConfig.loadConfig()
     install(ContentNegotiation) {
         json()
     }
     install(CallLogging)
+    install(Authentication) {
+        jwt("auth-jwt") {
+            verifier(
+                AuthConfig.run {
+                    JWT.require(Algorithm.HMAC256(secret)).withIssuer(issuer).withAudience(audience).build()
+                }
+            )
+            validate { credential ->
+                if (credential.payload.subject.toIntOrNull() != null) {
+                    JWTPrincipal(credential.payload)
+                } else {
+                    null
+                }
+            }
+        }
+    }
     val database = configureDatabase()
 
     transaction(database) {
@@ -36,13 +70,23 @@ fun Application.module() {
         SchemaUtils.create(Users)
     }
 
-    val taskService = TaskService(database)
+
 
     launch {
-        taskService.apply {
+        TaskService.apply {
             add(Task(name = "Hello, world!", statement = "Print \"Hello, world!\" to the standard output."))
-            add(Task(name = "x^3", statement = "Write a program that takes an integer input x and prints the result of x ^ 3 to the standard output."))
-            add(Task(name = "Alice and Bob", statement = "Alice and Bob each have 2 apples. How many apples in total they possess?"))
+            add(
+                Task(
+                    name = "x^3",
+                    statement = "Write a program that takes an integer input x and prints the result of x ^ 3 to the standard output."
+                )
+            )
+            add(
+                Task(
+                    name = "Alice and Bob",
+                    statement = "Alice and Bob each have 2 apples. How many apples in total they possess?"
+                )
+            )
         }
     }
 
@@ -52,8 +96,17 @@ fun Application.module() {
             call.respondText("pong");
         }
         route("/api") {
-            taskRoutes(taskService)
+            taskRoutes()
         }
+        authenticate("auth-jwt") {
+            get("/me") {
+                val principal = call.principal<JWTPrincipal>()
+                val username = principal!!.payload.getClaim("username").asString()
+                call.respondText("Hello, $username")
+            }
+
+        }
+        authRoutes()
         singlePageApplication {
             useResources = true
             defaultPage = "index.html"
