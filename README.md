@@ -24,8 +24,15 @@
 #### Design Prototype
 
 [Figma](https://www.figma.com/design/M9TR2k9xhBSGOADXkkEMxV/PC?node-id=0-1&t=iBpw1mR7k9AZp8R3-1)
+
 ## API Reference
 
 [API](/documentation/API.md)
 or
 http://localhost:8080/swagger
+
+## Start
+Run
+```console
+./gradlew run
+```
