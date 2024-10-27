@@ -27,3 +27,5 @@
 ## API Reference
 
 [API](/documentation/API.md)
+or
+http://localhost:8080/swagger
