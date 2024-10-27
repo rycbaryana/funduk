@@ -4,76 +4,68 @@ info:
   description: "funduk API"
   version: "1.0.0"
 servers:
-- url: "https://funduk"
+  - url: "http://localhost:8080"
 paths:
   /api/tasks:
     get:
-      description: ""
+      summary: Returns a list of tasks
       responses:
         "200":
-          description: "OK"
+          description: "JSON array of tasks"
           content:
-            '*/*':
+            'application/json':
               schema:
                 type: "array"
     post:
-      description: ""
+      description: Creates task
       requestBody:
         content:
-          '*/*':
+          'application/json':
             schema:
               type: "object"
         required: true
       responses:
         "201":
-          description: "Created"
+          description: "Task ID"
           content:
-            '*/*':
+            'application/json':
               schema:
-                type: "object"
+                type: "integer"
   /api/tasks/{id}:
     delete:
-      description: ""
+      description: "Delete task"
       parameters:
-      - name: "id"
-        in: "path"
-        required: true
-        schema:
-          type: "string"
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
       responses:
         "200":
           description: "OK"
-          content:
-            '*/*':
-              schema:
-                type: "object"
         "404":
           description: "Not Found"
-          content:
-            '*/*':
-              schema:
-                type: "object"
     get:
-      description: ""
+      description: "Get task with id"
       parameters:
-      - name: "id"
-        in: "path"
-        required: true
-        schema:
-          type: "string"
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
       responses:
         "200":
           description: "OK"
           content:
-            '*/*':
+            'application/json':
               schema:
-                $ref: "#/components/schemas/Object"
+                type: "object"
   /auth/login:
     post:
-      description: ""
+      description: "Login"
       requestBody:
         content:
-          '*/*':
+          'application/json':
             schema:
               $ref: "#/components/schemas/AuthRequest"
         required: true
@@ -98,7 +90,7 @@ paths:
       description: ""
       requestBody:
         content:
-          '*/*':
+          'application/json':
             schema:
               $ref: "#/components/schemas/AuthRequest"
         required: true
@@ -106,24 +98,24 @@ paths:
         "409":
           description: "Conflict"
           content:
-            '*/*':
+            'text/plain':
               schema:
                 type: "string"
-              examples:
-                Example#1:
-                  value: "Oops! That username is already in use. Try a different one."
+              example: "Oops! That username is already in use. Try a different one."
         "201":
           description: "Created"
           content:
-            '*/*':
+            'text/plain':
               schema:
                 type: "string"
-              examples:
-                Example#1:
-                  value: "User registered successfully"
+              example: "User registered successfully"
+
+
   /me:
     get:
       description: ""
+      security:
+        - jwtAuth: []
       responses:
         "200":
           description: "OK"
@@ -131,9 +123,6 @@ paths:
             text/plain:
               schema:
                 type: "string"
-              examples:
-                Example#1:
-                  value: ""
   /ping:
     get:
       description: ""
@@ -148,10 +137,12 @@ paths:
                 Example#1:
                   value: "pong"
 components:
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
-    Object:
-      type: "object"
-      properties: {}
     AuthRequest:
       type: "object"
       properties:

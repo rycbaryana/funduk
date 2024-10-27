@@ -23,6 +23,7 @@ ktor-server-callLogging = {module = "io.ktor:ktor-server-call-logging", version.
 ktor-server-auth = {module = "io.ktor:ktor-server-auth", version.ref="ktor"}
 ktor-server-auth-jwt = {module = "io.ktor:ktor-server-auth-jwt", version.ref="ktor"}
 ktor-server-swagger = {module = "io.ktor:ktor-server-swagger", version.ref="ktor"}
+ktor-server-cors = {module = "io.ktor:ktor-server-cors", version.ref="ktor"}
 
 ktor-client-js = {module = "io.ktor:ktor-client-js", version.ref = "ktor"}
 ktor-client-contentNegotiation = {module = "io.ktor:ktor-client-content-negotiation", version.ref= "ktor"}

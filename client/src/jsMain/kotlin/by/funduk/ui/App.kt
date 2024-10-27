@@ -11,7 +11,7 @@ import by.funduk.ui.system.nav
 import by.funduk.ui.system.bottom
 import by.funduk.ui.system.taskBoard
 import by.funduk.ui.system.taskView
-import by.funduk.general.*
+import by.funduk.model.*
 import web.cssom.px
 import web.cssom.pt
 import web.cssom.*

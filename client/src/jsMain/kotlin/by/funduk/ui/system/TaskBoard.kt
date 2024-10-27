@@ -1,6 +1,8 @@
 package by.funduk.ui.system
 
-import by.funduk.general.*
+import by.funduk.model.Rank
+import by.funduk.model.Status
+import by.funduk.model.Tag
 import by.funduk.ui.general.*
 
 import react.*
@@ -52,7 +54,7 @@ val taskBoard = FC<TaskBoardProps> { props ->
                     rank = Rank.Cow
                     numberOfSolvers = 1
                     status = Status.OK
-                    tags = listOf(Tag.Dp, Tag.Fft, Tag.Greed)
+                    tags = listOf(Tag.DP, Tag.FFT, Tag.Greedy)
                 }
 
                 taskView {
@@ -61,7 +63,7 @@ val taskBoard = FC<TaskBoardProps> { props ->
                     rank = Rank.MediumRare
                     numberOfSolvers = 1
                     status = Status.WA
-                    tags = listOf(Tag.Dp, Tag.Fft, Tag.Greed)
+                    tags = listOf(Tag.DP, Tag.FFT, Tag.Greedy)
                 }
 
                 taskView {
@@ -71,9 +73,9 @@ val taskBoard = FC<TaskBoardProps> { props ->
                     numberOfSolvers = 1
                     status = Status.TL
                     tags = listOf(
-                        Tag.Dp,
-                        Tag.Fft,
-                        Tag.Greed
+                        Tag.DP,
+                        Tag.FFT,
+                        Tag.Greedy
                     )
                 }
             }

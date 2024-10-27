@@ -1,7 +1,11 @@
 package by.funduk
 
+import by.funduk.db.Tags
 import by.funduk.db.Tasks
+import by.funduk.db.TasksTags
 import by.funduk.db.Users
+import by.funduk.model.Rank
+import by.funduk.model.Tag
 import by.funduk.model.Task
 import by.funduk.routes.taskRoutes
 import by.funduk.plugins.configureDatabase
@@ -10,6 +14,7 @@ import by.funduk.routes.authRoutes
 import by.funduk.services.TaskService
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -19,6 +24,7 @@ import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -44,6 +50,13 @@ object AuthConfig {
 
 fun Application.module() {
     AuthConfig.loadConfig()
+    install(CORS) {
+        anyHost()
+        allowHeader(HttpHeaders.ContentType)
+        allowMethod(HttpMethod.Delete)
+        allowHeader(HttpHeaders.Authorization)
+        allowMethod(HttpMethod.Post)
+    }
     install(ContentNegotiation) {
         json()
     }
@@ -73,25 +86,36 @@ fun Application.module() {
     val database = configureDatabase()
 
     transaction(database) {
-        SchemaUtils.create(Tasks)
-        SchemaUtils.create(Users)
+        SchemaUtils.create(Tasks, Users, Tags, TasksTags)
     }
-
 
 
     launch {
         TaskService.apply {
-            add(Task(name = "Hello, world!", statement = "Print \"Hello, world!\" to the standard output."))
+            add(
+                Task(
+                    name = "Hello, world!",
+                    statement = "Print \"Hello, world!\" to the standard output.",
+                    rank = Rank.Calf,
+                    tags = listOf(Tag.Greedy, Tag.TwoSAT)
+
+                )
+            )
             add(
                 Task(
                     name = "x^3",
-                    statement = "Write a program that takes an integer input x and prints the result of x ^ 3 to the standard output."
+                    statement = "Write a program that takes an integer input x and prints the result of x ^ 3 to the standard output.",
+                    rank = Rank.Cow,
+                    tags = listOf(Tag.DP, Tag.BinSearch)
                 )
             )
             add(
                 Task(
                     name = "Alice and Bob",
-                    statement = "Alice and Bob each have 2 apples. How many apples in total they possess?"
+                    statement = "Alice and Bob each have 2 apples. How many apples in total they possess?",
+                    rank = Rank.MediumRare,
+                    tags = listOf(Tag.DS, Tag.FFT)
+
                 )
             )
         }

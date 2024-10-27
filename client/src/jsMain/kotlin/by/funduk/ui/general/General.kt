@@ -2,7 +2,8 @@ package by.funduk.ui.general
 
 import web.cssom.*
 
-import by.funduk.general.*
+import by.funduk.model.Rank
+import by.funduk.model.Status
 
 sealed interface Pallete {
     sealed interface Web {
