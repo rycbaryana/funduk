@@ -26,16 +26,15 @@ object TaskService {
         }
     }
 
-    suspend fun getViews(count: Int, offset: Long = 0): List<TaskView> {
-        return query {
-            Tasks.selectAll().limit(count).offset(offset).map {
-                TaskView(
-                    it[Tasks.id].value,
-                    it[Tasks.name], Rank.entries[it[Tasks.rank]]
-                )
-            }
+    suspend fun getViews(count: Int, offset: Int = 0): List<TaskView> = query {
+        Tasks.selectAll().limit(count).offset(offset.toLong()).map {
+            TaskView(
+                it[Tasks.id].value,
+                it[Tasks.name], Rank.entries[it[Tasks.rank]]
+            )
         }
     }
+
 
     suspend fun add(task: Task): Int = query {
         val taskId = Tasks.insertAndGetId {
@@ -45,9 +44,9 @@ object TaskService {
             it[solvedCount] = task.solvedCount
         }
         task.tags.forEach { tag ->
-            val tagId = Tags.select(Tags.id).where { name eq tag.text }
+            val tagId = Tags.select(Tags.id).where { name eq tag.name }
                 .singleOrNull()?.get(Tags.id) ?: Tags.insertAndGetId {
-                it[name] = tag.text
+                it[name] = tag.name
             }
             TasksTags.insert {
                 it[TasksTags.taskId] = taskId

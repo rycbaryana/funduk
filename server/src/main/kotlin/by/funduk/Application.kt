@@ -2,6 +2,7 @@ package by.funduk
 
 import by.funduk.db.Tasks
 import by.funduk.db.Users
+import by.funduk.model.Rank
 import by.funduk.model.Task
 import by.funduk.routes.taskRoutes
 import by.funduk.plugins.configureDatabase
@@ -81,17 +82,19 @@ fun Application.module() {
 
     launch {
         TaskService.apply {
-            add(Task(name = "Hello, world!", statement = "Print \"Hello, world!\" to the standard output."))
+            add(Task(name = "Hello, world!", statement = "Print \"Hello, world!\" to the standard output.", rank = Rank.Calf))
             add(
                 Task(
                     name = "x^3",
-                    statement = "Write a program that takes an integer input x and prints the result of x ^ 3 to the standard output."
+                    statement = "Write a program that takes an integer input x and prints the result of x ^ 3 to the standard output.",
+                    rank = Rank.Cow
                 )
             )
             add(
                 Task(
                     name = "Alice and Bob",
-                    statement = "Alice and Bob each have 2 apples. How many apples in total they possess?"
+                    statement = "Alice and Bob each have 2 apples. How many apples in total they possess?",
+                    rank = Rank.MediumRare
                 )
             )
         }
