@@ -15,3 +15,5 @@ src/jsMain/web
 node_modules
 package.json
 .kotlin
+
+logs

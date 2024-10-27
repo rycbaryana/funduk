@@ -13,12 +13,12 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.launch
@@ -46,7 +46,12 @@ fun Application.module() {
     install(ContentNegotiation) {
         json()
     }
-    install(CallLogging)
+    install(CallLogging) {
+        format { call ->
+            val status = call.response.status()
+            "${status?.value ?: "NA"} ${status?.description ?: "NA"} - ${call.request.httpMethod.value} ${call.request.uri}"
+        }
+    }
     install(Authentication) {
         jwt("auth-jwt") {
             verifier(
@@ -93,7 +98,7 @@ fun Application.module() {
 
     routing {
         get("/ping") {
-            call.respondText("pong");
+            call.respondText("pong")
         }
         route("/api") {
             taskRoutes()
