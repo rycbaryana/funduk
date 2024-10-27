@@ -8,24 +8,24 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.taskRoutes(service: TaskService) {
+fun Route.taskRoutes() {
     route("/tasks") {
         get {
-            call.respond(service.allTasks())
+            call.respond(TaskService.allTasks())
         }
         get("/{id}") {
             val id = call.parameters["id"]!!.toInt()
-            val task = service.get(id)
+            val task = TaskService.get(id)
             call.respond(task ?: HttpStatusCode.NotFound)
         }
         post {
             val task: Task = call.receive()
-            service.add(task)
+            TaskService.add(task)
             call.respond(HttpStatusCode.Created)
         }
         delete("/{id}") {
             val id = call.parameters["id"]!!.toInt()
-            val deleted = service.delete(id)
+            val deleted = TaskService.delete(id)
             call.respond(
                 if (deleted) {
                     HttpStatusCode.OK
