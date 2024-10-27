@@ -3,7 +3,7 @@ plugins {
 }
 
 kotlin {
-    js(IR) {
+    js {
         browser {
         }
         binaries.executable()
@@ -14,6 +14,9 @@ kotlin {
                 implementation(jsLibs.react)
                 implementation(jsLibs.reactDom)
                 implementation(jsLibs.reactRouterDom)
+                implementation(jsLibs.emotion)
+                implementation(jsLibs.csstype)
+
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:${libs.versions.kotlinx.coroutines.get()}")
                 implementation(libs.ktor.client.contentNegotiation)
                 implementation(libs.ktor.client.js)
@@ -21,11 +24,11 @@ kotlin {
                 implementation(projects.shared)
             }
         }
-        val jsTest by getting {
-            dependencies {
-                implementation(kotlin("test-js"))
-            }
-        }
+//        val jsTest by getting {
+//            dependencies {
+//                implementation(kotlin("test-js"))
+//            }
+//        }
     }
 }
 

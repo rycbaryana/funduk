@@ -1,0 +1,19 @@
+.noselect {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.hide-scrollbars {
+    overflow: hidden; /* Hides scrollbars completely */
+}
+
+.allow-scroll {
+    overflow: auto; /* Allows scrolling but hides the scrollbar */
+    scrollbar-width: none; /* For Firefox */
+}
+
+.allow-scroll::-webkit-scrollbar {
+    display: none; /* For Chrome, Safari, and other WebKit browsers */
+}
