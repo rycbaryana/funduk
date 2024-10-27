@@ -2,11 +2,9 @@ package by.funduk.ui.system
 
 import by.funduk.general.*
 import by.funduk.ui.general.*
-import by.funduk.ui.general.Font
 
 import react.*
 import react.dom.html.ReactHTML.div
-import react.dom.html.ReactHTML.a
 import emotion.react.*
 import web.cssom.*
 

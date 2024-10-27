@@ -1,15 +1,9 @@
 package by.funduk.ui.general
 
-import by.funduk.ui.general.Font
-import by.funduk.ui.general.Pallete
-import by.funduk.ui.general.kProjectName
 import by.funduk.ui.system.tagBoard
 import react.*
 import react.dom.html.ReactHTML.div
-import react.dom.html.ReactHTML.span
-import react.dom.html.ReactHTML.input
 import emotion.react.*
-import js.decorators.DecoratorContextKind
 import web.cssom.*
 
 
