@@ -1,6 +1,8 @@
 package by.funduk.ui.system
 
-import by.funduk.general.*
+import by.funduk.model.Rank
+import by.funduk.model.Status
+import by.funduk.model.Tag
 import by.funduk.ui.general.*
 import by.funduk.ui.general.Font
 

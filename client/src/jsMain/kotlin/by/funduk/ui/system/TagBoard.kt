@@ -1,6 +1,6 @@
 package by.funduk.ui.system
 
-import by.funduk.general.*
+import by.funduk.model.Tag
 import by.funduk.ui.general.*
 
 import react.*

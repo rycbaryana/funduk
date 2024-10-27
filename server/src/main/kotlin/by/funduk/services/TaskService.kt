@@ -1,42 +1,85 @@
 package by.funduk.services
 
+import by.funduk.db.Tags
+import by.funduk.db.Tags.name
 import by.funduk.db.Tasks
+import by.funduk.db.TasksTags
 import by.funduk.db.query
 import by.funduk.model.Task
+import by.funduk.model.Rank
+import by.funduk.model.Tag
+import by.funduk.ui.TaskView
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 object TaskService {
     suspend fun allTasks(): List<Task> {
         return query {
-            Tasks.selectAll().map { Task(it[Tasks.id].value, it[Tasks.name], it[Tasks.statement]) }
+            Tasks.selectAll()
+                .map {
+                    Task(
+                        it[Tasks.id].value,
+                        it[Tasks.name], it[Tasks.statement],
+                        Rank.entries[it[Tasks.rank]]
+                    )
+                }
+        }
+    }
+
+    suspend fun getViews(count: Int, offset: Long = 0): List<TaskView> {
+        return query {
+            Tasks.selectAll().limit(count).offset(offset).map {
+                TaskView(
+                    it[Tasks.id].value,
+                    it[Tasks.name], Rank.entries[it[Tasks.rank]]
+                )
+            }
         }
     }
 
     suspend fun add(task: Task): Int = query {
-        Tasks.insert {
+        val taskId = Tasks.insertAndGetId {
             it[name] = task.name
             it[statement] = task.statement
-        }[Tasks.id].value
-    }
-
-    suspend fun get(id: Int): Task? {
-        return query {
-            Tasks.selectAll()
-                .where { Tasks.id eq id }
-                .map { Task(it[Tasks.id].value, it[Tasks.name], it[Tasks.statement]) }
-                .singleOrNull()
+            it[rank] = task.rank.ordinal
+            it[solvedCount] = task.solvedCount
         }
+        task.tags.forEach { tag ->
+            val tagId = Tags.select(Tags.id).where { name eq tag.text }
+                .singleOrNull()?.get(Tags.id) ?: Tags.insertAndGetId {
+                it[name] = tag.text
+            }
+            TasksTags.insert {
+                it[TasksTags.taskId] = taskId
+                it[TasksTags.tagId] = tagId
+            }
+        }
+        taskId.value
     }
 
-    suspend fun update(id: Int, task: Task): Boolean {
-        return query {
-            Tasks.update({ Tasks.id eq id }) {
-                it[name] = task.name
-                it[statement] = task.statement
+    suspend fun get(id: Int): Task? = query {
+        Tasks.selectAll()
+            .where { Tasks.id eq id }
+            .map {
+                Task(
+                    it[Tasks.id].value,
+                    it[Tasks.name],
+                    it[Tasks.statement],
+                    Rank.entries[it[Tasks.rank]],
+                    getTags(it[Tasks.id].value),
+                    it[Tasks.solvedCount]
+                )
             }
-        } > 0
+            .singleOrNull()
     }
+
+    private suspend fun getTags(taskId: Int): List<Tag> =
+        query {
+            TasksTags
+                .innerJoin(Tags)
+                .selectAll().where { TasksTags.taskId eq taskId }
+                .map { Tag.valueOf(it[name]) }
+        }
 
     suspend fun delete(id: Int): Boolean {
         return query {
