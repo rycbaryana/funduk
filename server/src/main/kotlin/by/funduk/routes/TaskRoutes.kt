@@ -20,8 +20,8 @@ fun Route.taskRoutes() {
         }
         post {
             val task: Task = call.receive()
-            TaskService.add(task)
-            call.respond(HttpStatusCode.Created)
+            val taskId = TaskService.add(task)
+            call.respond(HttpStatusCode.Created, taskId)
         }
         delete("/{id}") {
             val id = call.parameters["id"]!!.toInt()

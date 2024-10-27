@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.ktor.server.contentNegotiation)
     implementation(libs.ktor.server.callLogging)
     implementation(libs.ktor.server.swagger)
+    implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.auth.jwt)
     implementation("org.mindrot:jbcrypt:0.4")

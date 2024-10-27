@@ -20,7 +20,8 @@ object TaskService {
                     Task(
                         it[Tasks.id].value,
                         it[Tasks.name], it[Tasks.statement],
-                        Rank.entries[it[Tasks.rank]]
+                        Rank.entries[it[Tasks.rank]],
+                        getTags(it[Tasks.id].value)
                     )
                 }
         }

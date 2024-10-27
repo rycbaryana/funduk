@@ -6,5 +6,5 @@ enum class Tag(val text: String) {
     DS("ds"),
     FFT("fft"),
     BinSearch("bin search"),
-    TWOSAT("2-sat"),
+    TwoSAT("2-sat"),
 }
