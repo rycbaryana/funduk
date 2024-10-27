@@ -5,6 +5,7 @@ import by.funduk.db.Users
 import by.funduk.model.Task
 import by.funduk.routes.taskRoutes
 import by.funduk.plugins.configureDatabase
+import by.funduk.plugins.configureSwagger
 import by.funduk.routes.authRoutes
 import by.funduk.services.TaskService
 import com.auth0.jwt.JWT
@@ -68,6 +69,7 @@ fun Application.module() {
             }
         }
     }
+    configureSwagger()
     val database = configureDatabase()
 
     transaction(database) {
