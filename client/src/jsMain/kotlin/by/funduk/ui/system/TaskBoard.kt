@@ -9,6 +9,11 @@ import react.*
 import react.dom.html.ReactHTML.div
 import emotion.react.*
 import web.cssom.*
+import web.events.Event
+import web.events.EventType
+import web.events.addEventListener
+import web.html.HTMLDivElement
+import web.window.window
 
 // taskboard + filter
 
@@ -22,26 +27,32 @@ val taskBoard = FC<TaskBoardProps> { props ->
             display = Display.flex
             flexDirection = FlexDirection.column
 
+            width = Sizes.TaskViewWidth + Sizes.RegularGap + Sizes.Filter.Width
             alignItems = AlignItems.center
             gap = Sizes.RegularGap
         }
-        // content
-        div {
 
+        val content = useRef<HTMLDivElement>(null);
+        // content
+
+        div {
+            ref = content
             css {
                 width = 100.pct
                 display = Display.flex
                 flexDirection = FlexDirection.row
-                justifyContent = JustifyContent.center
                 gap = Sizes.BigMargin
             }
 
             // taskboard
+
+            val filter = useRef<HTMLDivElement>(null)
             div {
                 css {
                     display = Display.flex
                     flexDirection = FlexDirection.column
                     justifyContent = JustifyContent.start
+                    justifyItems = JustifyItems.start;
                     alignItems = AlignItems.center
                     gap = Sizes.RegularMargin
                     boxShadow = Common.Shadow
@@ -78,11 +89,43 @@ val taskBoard = FC<TaskBoardProps> { props ->
                         Tag.Greedy
                     )
                 }
+
+                taskView {
+                    name = "Example task"
+                    ind = 123402
+                    rank = Rank.MediumWell
+                    numberOfSolvers = 1
+                    status = Status.Fail
+                    tags = listOf(
+                        Tag.DP,
+                        Tag.FFT,
+                        Tag.Greedy
+                    )
+                }
+
+                taskView {
+                    name = "Example task"
+                    ind = 123402
+                    rank = Rank.WellDone
+                    numberOfSolvers = 123
+                    tags = listOf(
+                        Tag.DP,
+                        Tag.BinSearch,
+                        Tag.Greedy
+                    )
+                }
             }
 
-            // filter
-            filterField {
+            onLoad = {
+                val rect = content.current?.getBoundingClientRect()
+                println("structing filter")
+                // filter
+                filterField {
+                    ref = filter
 
+                    top = (rect?.top ?: 0.0)
+                    right = (rect?.right ?: 0.0)
+                }
             }
         }
 
