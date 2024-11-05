@@ -32,7 +32,11 @@ or
 http://localhost:8080/swagger
 
 ## Start
-Run
+Run Server
 ```console
-./gradlew run
+./gradlew :server:run
+```
+Run Client
+```console
+./gradlew :web:run
 ```
