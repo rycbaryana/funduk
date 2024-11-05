@@ -5,21 +5,19 @@ import react.*
 import react.dom.html.ReactHTML.div
 import emotion.react.*
 import web.cssom.*
+import web.html.HTMLDivElement
 
 
-external interface FilterFieldProps : Props {
-
+external interface FilterFieldProps : PropsWithRef<HTMLDivElement> {
 }
 
 val filterField = FC<FilterFieldProps> { props ->
     div {
         css {
-            position = Position.sticky
+            position = Position.relative
             boxShadow = Common.Shadow
             borderRadius = Sizes.BoxBorderRadius
             background = Pallete.Web.Light
-            display = Display.flex
-            flexDirection = FlexDirection.column
             alignItems = AlignItems.center
             padding = Sizes.RegularMargin
             width = Sizes.Filter.Width
@@ -91,10 +89,7 @@ val filterField = FC<FilterFieldProps> { props ->
                         name = "calf"
                     }
                 }
-
             }
-
-
         }
 
         // tags

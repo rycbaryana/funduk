@@ -1,4 +1,3 @@
-import by.funduk.ui.general.Pallete
 import by.funduk.ui.general.Sizes
 import web.dom.document
 import react.*
@@ -10,15 +9,10 @@ import emotion.react.*
 import by.funduk.ui.system.nav
 import by.funduk.ui.system.bottom
 import by.funduk.ui.system.taskBoard
-import by.funduk.ui.system.taskView
-import by.funduk.model.*
 import web.cssom.px
-import web.cssom.pt
 import web.cssom.*
-import web.events.addEventListener
-import web.window.window
 
-private val Archive = FC<Props> { props ->
+private val Archive = FC<Props> { _ ->
     div {
         css {
             padding = 0.px
