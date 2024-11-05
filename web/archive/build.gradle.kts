@@ -29,8 +29,8 @@ kotlin {
 
 
 val browserDist by configurations.creating {
-    isCanBeConsumed = false
-    isCanBeResolved = true
+    isCanBeConsumed = true
+    isCanBeResolved = false
 }
 
 artifacts {

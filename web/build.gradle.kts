@@ -1,3 +1,5 @@
+import kotlin.io.path.name
+
 plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.ktor)
@@ -40,4 +42,14 @@ dependencies {
     testImplementation(libs.h2)
     testImplementation(libs.ktor.server.tests)
     testImplementation(libs.kotlin.test.junit)
+    browserDist(project(":web:archive", "browserDist"))
+}
+
+tasks.withType<Copy>().named("processResources") {
+    from(browserDist)
+    eachFile {
+        val pathElements = file.toPath().toString().split(File.separator)
+        val moduleName = pathElements.getOrNull(pathElements.indexOf("web") + 1) ?: throw GradleException("UNKNOWN MODULE")
+        relativePath = relativePath.prepend("static/$moduleName")
+    }
 }

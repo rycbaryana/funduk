@@ -12,7 +12,7 @@ import by.funduk.ui.system.taskBoard
 import web.cssom.px
 import web.cssom.*
 
-private val Archive = FC<Props> { props ->
+private val Archive = FC<Props> { _ ->
     div {
         css {
             padding = 0.px

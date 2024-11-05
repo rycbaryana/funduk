@@ -14,11 +14,6 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=${extra["io.ktor.development"] ?: "false"}")
 }
 
-val browserDist by configurations.creating {
-    isCanBeConsumed = false
-    isCanBeResolved = true
-}
-
 dependencies {
     implementation(projects.shared)
     implementation(libs.logback)
@@ -39,18 +34,4 @@ dependencies {
     testImplementation(libs.h2)
     testImplementation(libs.ktor.server.tests)
     testImplementation(libs.kotlin.test.junit)
-
-
-    browserDist(
-        project(
-            mapOf(
-                "path" to ":web",
-                "configuration" to "browserDist"
-            )
-        )
-    )
-}
-
-tasks.withType<Copy>().named("processResources") {
-    from(browserDist)
 }
