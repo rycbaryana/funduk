@@ -9,16 +9,12 @@ import web.html.HTMLDivElement
 
 
 external interface FilterFieldProps : PropsWithRef<HTMLDivElement> {
-    var top: Double
-    var right: Double
 }
 
 val filterField = FC<FilterFieldProps> { props ->
     div {
         css {
-            position = Position.fixed
-            top = props.top.px
-            right = props.right.px
+            position = Position.relative
             boxShadow = Common.Shadow
             borderRadius = Sizes.BoxBorderRadius
             background = Pallete.Web.Light

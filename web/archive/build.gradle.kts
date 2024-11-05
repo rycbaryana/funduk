@@ -21,21 +21,16 @@ kotlin {
                 implementation(libs.ktor.client.contentNegotiation)
                 implementation(libs.ktor.client.js)
                 implementation(libs.ktor.serialization.json)
-                implementation(projects.shared)
+                implementation(projects.web.common)
             }
         }
-//        val jsTest by getting {
-//            dependencies {
-//                implementation(kotlin("test-js"))
-//            }
-//        }
     }
 }
 
 
 val browserDist by configurations.creating {
-    isCanBeConsumed = true
-    isCanBeResolved = false
+    isCanBeConsumed = false
+    isCanBeResolved = true
 }
 
 artifacts {

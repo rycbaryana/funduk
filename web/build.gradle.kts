@@ -10,7 +10,7 @@ val ktorVersion = libs.versions.ktor.get()
 group = "by.funduk"
 version = "1.0.0"
 application {
-    mainClass.set("by.funduk.ApplicationKt")
+    mainClass.set("by.funduk.web.MainKt")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=${extra["io.ktor.development"] ?: "false"}")
 }
 
@@ -23,6 +23,7 @@ dependencies {
     implementation(projects.shared)
     implementation(libs.logback)
     implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.html.builder)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.contentNegotiation)
     implementation(libs.ktor.server.callLogging)
@@ -39,18 +40,4 @@ dependencies {
     testImplementation(libs.h2)
     testImplementation(libs.ktor.server.tests)
     testImplementation(libs.kotlin.test.junit)
-
-
-    browserDist(
-        project(
-            mapOf(
-                "path" to ":web",
-                "configuration" to "browserDist"
-            )
-        )
-    )
-}
-
-tasks.withType<Copy>().named("processResources") {
-    from(browserDist)
 }
