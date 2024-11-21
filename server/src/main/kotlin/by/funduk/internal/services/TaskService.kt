@@ -1,10 +1,10 @@
-package by.funduk.services
+package by.funduk.internal.services
 
-import by.funduk.db.Tags
-import by.funduk.db.Tags.name
-import by.funduk.db.Tasks
-import by.funduk.db.TasksTags
-import by.funduk.db.query
+import by.funduk.internal.db.Tags
+import by.funduk.internal.db.Tags.name
+import by.funduk.internal.db.Tasks
+import by.funduk.internal.db.TasksTags
+import by.funduk.internal.db.query
 import by.funduk.model.Task
 import by.funduk.model.Rank
 import by.funduk.model.Tag

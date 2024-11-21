@@ -1,4 +1,4 @@
-package by.funduk.db
+package by.funduk.internal.db
 
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ReferenceOption

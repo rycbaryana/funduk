@@ -1,4 +1,4 @@
-package by.funduk.utils
+package by.funduk.internal.utils
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm

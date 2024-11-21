@@ -4,6 +4,7 @@ import by.funduk.model.Rank
 import by.funduk.model.Status
 import by.funduk.model.Tag
 import by.funduk.ui.general.*
+import by.funduk.ui.*
 
 import react.*
 import react.dom.html.ReactHTML.div
@@ -14,6 +15,7 @@ import web.html.HTMLDivElement
 // taskboard + filter
 
 external interface TaskBoardProps : Props {
+    var tasks: List<TaskView>
 }
 
 val taskBoard = FC<TaskBoardProps> { props ->
@@ -41,81 +43,49 @@ val taskBoard = FC<TaskBoardProps> { props ->
             }
 
             // taskboard
+            if (props.tasks.isEmpty()) {
+                div {
+                    css {
+                        display = Display.flex
+                        height = Sizes.TaskViewHeight
+                        width = Sizes.TaskViewWidth
+                        justifyContent = JustifyContent.center
+                    }
 
-            val filter = useRef<HTMLDivElement>(null)
-            div {
-                css {
-                    display = Display.flex
-                    flexDirection = FlexDirection.column
-                    justifyContent = JustifyContent.start
+                    textFrame {
+                        size = by.funduk.ui.general.Font.Size.Big
+                        color = Pallete.Web.SecondPlan
+                        text = "No tasks was found"
+                    }
+
                 }
+            } else {
                 div {
                     css {
                         display = Display.flex
                         flexDirection = FlexDirection.column
                         justifyContent = JustifyContent.start
-                        justifyItems = JustifyItems.start;
-                        alignItems = AlignItems.center
-                        gap = Sizes.RegularMargin
-                        boxShadow = Common.Shadow
-                        background = Pallete.Web.LightShadow
-                        borderRadius = Sizes.BoxBorderRadius
                     }
+                    div {
+                        css {
+                            display = Display.flex
+                            flexDirection = FlexDirection.column
+                            justifyContent = JustifyContent.start
+                            justifyItems = JustifyItems.start;
+                            alignItems = AlignItems.center
+                            gap = Sizes.RegularMargin
+                            boxShadow = Common.Shadow
+                            background = Pallete.Web.LightShadow
+                            borderRadius = Sizes.BoxBorderRadius
+                        }
 
-                    taskView {
-                        name = "Example task"
-                        ind = 102
-                        rank = Rank.Cow
-                        numberOfSolvers = 1
-                        status = Status.OK
-                        tags = listOf(Tag.DP, Tag.FFT, Tag.Greedy)
-                    }
+                        for (el in props.tasks) {
+                            taskView {
+                                task = el
+                            }
 
-                    taskView {
-                        name = "Example task"
-                        ind = 100323
-                        rank = Rank.MediumRare
-                        numberOfSolvers = 1
-                        status = Status.WA
-                        tags = listOf(Tag.DP, Tag.FFT, Tag.Greedy)
-                    }
+                        }
 
-                    taskView {
-                        name = "Example task"
-                        ind = 123402
-                        rank = Rank.Calf
-                        numberOfSolvers = 1
-                        status = Status.TL
-                        tags = listOf(
-                            Tag.DP,
-                            Tag.FFT,
-                            Tag.Greedy
-                        )
-                    }
-
-                    taskView {
-                        name = "Example task"
-                        ind = 123402
-                        rank = Rank.MediumWell
-                        numberOfSolvers = 1
-                        status = Status.Fail
-                        tags = listOf(
-                            Tag.DP,
-                            Tag.FFT,
-                            Tag.Greedy
-                        )
-                    }
-
-                    taskView {
-                        name = "Example task"
-                        ind = 123402
-                        rank = Rank.WellDone
-                        numberOfSolvers = 123
-                        tags = listOf(
-                            Tag.DP,
-                            Tag.BinSearch,
-                            Tag.Greedy
-                        )
                     }
                 }
             }
@@ -129,25 +99,26 @@ val taskBoard = FC<TaskBoardProps> { props ->
                 }
 
                 filterField {
-                    ref = filter
                 }
             }
 
         }
 
         // load more
-        div {
-            css {
-                display = Display.flex
-                height = Sizes.LoadMoreButtonHeight
-                width = Sizes.LoadMoreButtonWidth
-                borderRadius = Sizes.BoxBorderRadius
-                boxShadow = Common.Shadow
-                justifyContent = JustifyContent.center
-            }
+        if (props.tasks.isNotEmpty()) {
+            div {
+                css {
+                    display = Display.flex
+                    height = Sizes.LoadMoreButtonHeight
+                    width = Sizes.LoadMoreButtonWidth
+                    borderRadius = Sizes.BoxBorderRadius
+                    boxShadow = Common.Shadow
+                    justifyContent = JustifyContent.center
+                }
 
-            textFrame {
-                text = "Load more"
+                textFrame {
+                    text = "Load more"
+                }
             }
         }
 

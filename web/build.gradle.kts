@@ -43,6 +43,7 @@ dependencies {
     testImplementation(libs.ktor.server.tests)
     testImplementation(libs.kotlin.test.junit)
     browserDist(project(":web:archive", "browserDist"))
+    browserDist(project(":web:task", "browserDist"))
 }
 
 tasks.withType<Copy>().named("processResources") {

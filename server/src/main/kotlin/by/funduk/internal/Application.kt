@@ -1,17 +1,17 @@
-package by.funduk
+package by.funduk.internal
 
-import by.funduk.db.Tags
-import by.funduk.db.Tasks
-import by.funduk.db.TasksTags
-import by.funduk.db.Users
+import by.funduk.internal.db.Tags
+import by.funduk.internal.db.Tasks
+import by.funduk.internal.db.TasksTags
+import by.funduk.internal.db.Users
 import by.funduk.model.Rank
 import by.funduk.model.Tag
 import by.funduk.model.Task
-import by.funduk.routes.taskRoutes
-import by.funduk.plugins.configureDatabase
-import by.funduk.plugins.configureSwagger
-import by.funduk.routes.authRoutes
-import by.funduk.services.TaskService
+import by.funduk.internal.routes.taskRoutes
+import by.funduk.internal.plugins.configureDatabase
+import by.funduk.internal.plugins.configureSwagger
+import by.funduk.internal.routes.authRoutes
+import by.funduk.internal.services.TaskService
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.http.*

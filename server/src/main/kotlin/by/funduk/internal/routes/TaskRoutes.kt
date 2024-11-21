@@ -1,7 +1,8 @@
-package by.funduk.routes
+package by.funduk.internal.routes
 
 import by.funduk.model.Task
-import by.funduk.services.TaskService
+import by.funduk.comunication.TaskViewBatch
+import by.funduk.internal.services.TaskService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -33,6 +34,14 @@ fun Route.taskRoutes() {
                     HttpStatusCode.NotFound
                 }
             )
+        }
+    }
+
+    route("/task_views") {
+        post {
+            val batch: TaskViewBatch = call.receive()
+            val views = TaskService.getViews(batch.count, batch.offset)
+            call.respond(views)
         }
     }
 }

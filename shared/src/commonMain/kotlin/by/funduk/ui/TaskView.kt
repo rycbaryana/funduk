@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 data class TaskView(
     val id: Int,
     val name: String,
-    val rank: Rank,
+    val rank: Rank?, // task may have no rank
     val tags: List<Tag> = listOf(),
     val solvedCount: Int = 0,
     val userStatus: Status? = null

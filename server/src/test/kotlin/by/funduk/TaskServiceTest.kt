@@ -1,12 +1,12 @@
 package by.funduk
 
-import by.funduk.db.Tags
-import by.funduk.db.Tasks
-import by.funduk.db.TasksTags
+import by.funduk.internal.db.Tags
+import by.funduk.internal.db.Tasks
+import by.funduk.internal.db.TasksTags
 import by.funduk.model.Rank
 import by.funduk.model.Tag
 import by.funduk.model.Task
-import by.funduk.services.TaskService
+import by.funduk.internal.services.TaskService
 import by.funduk.ui.TaskView
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*

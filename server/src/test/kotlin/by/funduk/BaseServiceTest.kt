@@ -1,7 +1,7 @@
 package by.funduk
 
-import by.funduk.db.Tasks
-import by.funduk.db.Users
+import by.funduk.internal.db.Tasks
+import by.funduk.internal.db.Users
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table

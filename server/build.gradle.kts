@@ -7,10 +7,10 @@ plugins {
 
 val ktorVersion = libs.versions.ktor.get()
 
-group = "by.funduk"
+group = "by.funduk.internal"
 version = "1.0.0"
 application {
-    mainClass.set("by.funduk.ApplicationKt")
+    mainClass.set("by.funduk.internal.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=${extra["io.ktor.development"] ?: "false"}")
 }
 

@@ -13,13 +13,12 @@ import emotion.react.*
 import web.cssom.*
 
 external interface NavProps : Props {
-    var scrolledDown: Int
 }
 
 val nav = FC<NavProps> { props ->
     div {
         css {
-            top = -props.scrolledDown * Sizes.NavHeight
+            top = 0.px
             transition = Transition(TransitionProperty.all, 0.5.s, 0.s)
             left = 0.px
             background = Pallete.Web.Light

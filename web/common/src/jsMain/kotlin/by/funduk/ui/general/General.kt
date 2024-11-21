@@ -118,8 +118,14 @@ sealed interface Sizes {
 }
 
 sealed interface Counts {
+    sealed interface UI {
+        companion object {
+            val NumberOfTagLinesInTaskView = 2;
+        }
+    }
+
     companion object {
-        val NumberOfTagLinesInTaskView = 2;
+        val TaskViewBatchSize = 10;
     }
 }
 

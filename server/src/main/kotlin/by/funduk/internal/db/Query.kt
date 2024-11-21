@@ -1,4 +1,4 @@
-package by.funduk.db
+package by.funduk.internal.db
 
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database

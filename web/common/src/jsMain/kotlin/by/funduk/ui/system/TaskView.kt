@@ -1,8 +1,6 @@
 package by.funduk.ui.system
 
-import by.funduk.model.Rank
-import by.funduk.model.Status
-import by.funduk.model.Tag
+import by.funduk.ui.*
 import by.funduk.ui.general.*
 import by.funduk.ui.general.Font
 
@@ -12,12 +10,7 @@ import emotion.react.*
 import web.cssom.*
 
 external interface TaskViewProps : Props {
-    var rank: Rank?
-    var name: String
-    var ind: Int
-    var tags: List<Tag>
-    var status: Status?
-    var numberOfSolvers: Int
+    var task: TaskView
 }
 
 val taskView = FC<TaskViewProps> { props ->
@@ -41,11 +34,11 @@ val taskView = FC<TaskViewProps> { props ->
                 display = Display.flex
                 flexDirection = FlexDirection.row
 
-                val back = props.rank?.let { colorOfRank[it] } ?: NamedColor.transparent
+                val back = props.task.rank?.let { colorOfRank[it] } ?: NamedColor.transparent
                 background = back
             }
 
-            val tc = props.rank?.let { Pallete.Web.LightText } ?: Pallete.Web.DarkText
+            val tc = props.task.rank?.let { Pallete.Web.LightText } ?: Pallete.Web.DarkText
 
             div {
                 css {
@@ -57,13 +50,13 @@ val taskView = FC<TaskViewProps> { props ->
                 }
 
                 textFrame {
-                    text = props.name
+                    text = props.task.name
                     color = tc
                     margins = listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin)
                 }
 
                 textFrame {
-                    text = props.ind.toString()
+                    text = props.task.id.toString()
                     color = tc
                     size = Font.Size.Small
                     margins = listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin)
@@ -85,7 +78,7 @@ val taskView = FC<TaskViewProps> { props ->
                 }
 
                 textFrame {
-                    text = props.rank?.toString() ?: ""
+                    text = props.task.rank?.toString() ?: ""
                     color = tc
                     size = Font.Size.Small
                 }
@@ -115,14 +108,14 @@ val taskView = FC<TaskViewProps> { props ->
                     justifyContent = JustifyContent.center
                     alignItems = AlignItems.center
 
-                    val back = props.status?.let { colorOfStatus[it] } ?: NamedColor.transparent
+                    val back = props.task.userStatus?.let { colorOfStatus[it] } ?: NamedColor.transparent
                     background = back
                 }
 
-                val tc = props.status?.let { Pallete.Web.LightText } ?: Pallete.Web.DarkText
+                val tc = props.task.userStatus?.let { Pallete.Web.LightText } ?: Pallete.Web.DarkText
 
                 textFrame {
-                    text = props.numberOfSolvers.toString()
+                    text = props.task.solvedCount.toString()
                     color = tc
                 }
             }
@@ -130,10 +123,9 @@ val taskView = FC<TaskViewProps> { props ->
             //tag list
             staticTagBoard {
                 direction = FlexDirection.column
-                padding = 0.5 * (Sizes.TaskViewHeight - Counts.NumberOfTagLinesInTaskView * Sizes.RegularTagHeight)
-                tags = props.tags
+                padding = 0.5 * (Sizes.TaskViewHeight - Counts.UI.NumberOfTagLinesInTaskView * Sizes.RegularTagHeight)
+                tags = props.task.tags
             }
-
         }
     }
 
