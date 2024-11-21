@@ -51,6 +51,7 @@ private val Archive = FC<Props> { _ ->
                 contentType(io.ktor.http.ContentType.Application.Json)
                 setBody(TaskViewBatch(Counts.TaskViewBatchSize, 0))
             }
+            tasks_views = res;
         }
 
         // body
