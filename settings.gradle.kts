@@ -38,10 +38,8 @@ dependencyResolutionManagement {
 }
 
 include(":shared")
-include(":client")
 include(":server")
 include(":web")
 include(":web:common")
 include(":web:archive")
 include("web:task")
-findProject(":web:task")?.name = "task"

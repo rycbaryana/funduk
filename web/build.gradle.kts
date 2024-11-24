@@ -1,5 +1,3 @@
-import kotlin.io.path.name
-
 plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.ktor)
@@ -28,20 +26,8 @@ dependencies {
     implementation(libs.ktor.server.html.builder)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.contentNegotiation)
-    implementation(libs.ktor.server.callLogging)
-    implementation(libs.ktor.server.swagger)
     implementation(libs.ktor.server.cors)
-    implementation(libs.ktor.server.auth)
-    implementation(libs.ktor.server.auth.jwt)
-    implementation("org.mindrot:jbcrypt:0.4")
     implementation(libs.ktor.serialization.json)
-    implementation(libs.exposed.core)
-    implementation(libs.exposed.jdbc)
-    implementation(libs.exposed.dao)
-    implementation(libs.h2)
-    testImplementation(libs.h2)
-    testImplementation(libs.ktor.server.tests)
-    testImplementation(libs.kotlin.test.junit)
     browserDist(project(":web:archive", "browserDist"))
     browserDist(project(":web:task", "browserDist"))
 }

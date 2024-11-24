@@ -1,7 +1,6 @@
 package by.funduk.internal.routes
 
 import by.funduk.model.Task
-import by.funduk.comunication.TaskViewBatch
 import by.funduk.internal.services.TaskService
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -13,6 +12,12 @@ fun Route.taskRoutes() {
     route("/tasks") {
         get {
             call.respond(TaskService.allTasks())
+        }
+        get("/views") {
+            val count = call.request.queryParameters["count"]?.toInt() ?: 10
+            val offset = call.request.queryParameters["offset"]?.toInt() ?: 0
+            val views = TaskService.getViews(count, offset)
+            call.respond(views)
         }
         get("/{id}") {
             val id = call.parameters["id"]!!.toInt()
@@ -37,11 +42,4 @@ fun Route.taskRoutes() {
         }
     }
 
-    route("/task_views") {
-        post {
-            val batch: TaskViewBatch = call.receive()
-            val views = TaskService.getViews(batch.count, batch.offset)
-            call.respond(views)
-        }
-    }
 }

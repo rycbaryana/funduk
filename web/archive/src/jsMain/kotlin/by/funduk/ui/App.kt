@@ -1,4 +1,7 @@
-import by.funduk.comunication.TaskViewBatch
+package by.funduk.ui
+
+import by.funduk.api.TasksApi
+import by.funduk.ui.general.Counts
 import by.funduk.ui.general.Sizes
 import web.dom.document
 import react.*
@@ -13,29 +16,9 @@ import by.funduk.ui.system.taskBoard
 import web.cssom.px
 import web.cssom.*
 
-import by.funduk.services.TaskService
-import by.funduk.services.kApiAddress
-import by.funduk.ui.TaskView
-import by.funduk.ui.general.Counts
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.client.engine.js.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.serialization.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.*
 
-var taskList: List<TaskView> = listOf()
-
 val scope = MainScope()
-
-val client = HttpClient(Js) {
-    install(ContentNegotiation) {
-        json()
-    }
-}
 
 private val Archive = FC<Props> { _ ->
     div {
@@ -44,16 +27,12 @@ private val Archive = FC<Props> { _ ->
             margin = 0.px
         }
 
-        var tasks_views by useState<List<TaskView>>(listOf())
-
-        scope.launch {
-            val res: List<TaskView> = client.post("$kApiAddress/task_views") {
-                contentType(io.ktor.http.ContentType.Application.Json)
-                setBody(TaskViewBatch(Counts.TaskViewBatchSize, 0))
+        var tasksViews by useState<List<TaskView>>(listOf())
+        useEffectOnce {
+            scope.launch {
+                tasksViews = TasksApi.getTasksViews(Counts.TaskViewBatchSize, 0)
             }
-            tasks_views = res
         }
-
         // body
         div {
             css {
@@ -68,19 +47,12 @@ private val Archive = FC<Props> { _ ->
             }
 
             // taskboard
-
             taskBoard {
-                tasks = tasks_views
+                tasks = tasksViews
             }
-
         }
-
-        bottom {
-
-        }
-
-        nav {
-        }
+        bottom
+        nav
     }
 }
 

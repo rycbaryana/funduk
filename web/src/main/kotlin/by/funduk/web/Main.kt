@@ -21,25 +21,14 @@ fun Application.module() {
                     title("Funduk")
                 }
                 body {
-                    h1 { +"The empty page for now" }
-                    p { +"needed as start point" }
+                    a("/archive") {
+                        +"Archive"
+                    }
                 }
             }
         }
 
         staticResources("/archive", "static/archive")
         staticResources("/task/{index}", "static/task")
-
-//        get("/task/{index}") {
-//            call.respondHtml(HttpStatusCode.OK) {
-//                head {
-//                    title("task")
-//                }
-//                body {
-//                    h1 { +"${call.parameters["index"]?.toIntOrNull()}" }
-//                    a(href = "/") { +"Go back to home" }
-//                }
-//            }
-//        }
     }
 }

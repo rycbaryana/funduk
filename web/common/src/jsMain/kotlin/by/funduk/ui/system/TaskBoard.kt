@@ -55,7 +55,7 @@ val taskBoard = FC<TaskBoardProps> { props ->
                     textFrame {
                         size = by.funduk.ui.general.Font.Size.Big
                         color = Pallete.Web.SecondPlan
-                        text = "No tasks was found"
+                        text = "No tasks were found"
                     }
 
                 }
