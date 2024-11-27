@@ -31,7 +31,7 @@ object TaskService {
         Tasks.selectAll().limit(count).offset(offset.toLong()).map {
             TaskView(
                 it[Tasks.id].value,
-                it[Tasks.name], Rank.entries[it[Tasks.rank]]
+                it[Tasks.name], Rank.entries[it[Tasks.rank]], getTags(it[Tasks.id].value)
             )
         }
     }
