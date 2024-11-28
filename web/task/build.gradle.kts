@@ -18,6 +18,7 @@ kotlin {
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:${libs.versions.kotlinx.coroutines.get()}")
                 implementation(projects.web.common)
+                implementation(projects.shared)
             }
         }
     }

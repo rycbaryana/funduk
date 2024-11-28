@@ -11,13 +11,14 @@ external interface TextFrameProps : Props {
     var forbbidSelection: Boolean
     var color: Color?
     var size: FontSize?
+    var bold: Boolean
     var margins: List<Length>?
 }
 
 val textFrame = FC<TextFrameProps> { props ->
     span {
         val mcolor = props.color ?: Pallete.Web.DarkText
-        val size = props.size ?: Font.Size.Regular
+        val size = props.size ?: Sizes.Font.Regular
         val margins =
             props.margins ?: listOf(Sizes.RegularMargin, Sizes.RegularMargin, Sizes.RegularMargin, Sizes.RegularMargin)
 
@@ -28,6 +29,7 @@ val textFrame = FC<TextFrameProps> { props ->
             justifyContent = JustifyContent.center
             alignItems = AlignItems.center
             fontFamily = Font.Family
+            fontWeight = if (props.bold) FontWeight.bold else FontWeight.normal
             textAlign = TextAlign.center
             verticalAlign = VerticalAlign.middle
             marginLeft = margins[2]
@@ -59,7 +61,7 @@ val tagFrame = FC<TagFrameProps> { props ->
     span {
         val mcolor = props.color ?: Pallete.Web.LightText
         val back = props.color ?: Pallete.Web.SecondPlan
-        val size = props.size ?: Font.Size.Small
+        val size = props.size ?: Sizes.Font.Small
         val margins =
             props.margins ?: listOf(Sizes.SmallMargin, Sizes.SmallMargin, Sizes.SmallMargin, Sizes.SmallMargin)
 

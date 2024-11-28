@@ -3,6 +3,7 @@ package by.funduk.ui
 import by.funduk.api.TasksApi
 import by.funduk.ui.general.Counts
 import by.funduk.ui.general.Sizes
+import by.funduk.ui.system.NavPage
 import web.dom.document
 import react.*
 import react.dom.client.createRoot
@@ -18,7 +19,7 @@ import web.cssom.*
 
 import kotlinx.coroutines.*
 
-val scope = MainScope()
+val main_scope = MainScope()
 
 private val Archive = FC<Props> { _ ->
     div {
@@ -27,32 +28,30 @@ private val Archive = FC<Props> { _ ->
             margin = 0.px
         }
 
-        var tasksViews by useState<List<TaskView>>(listOf())
-        useEffectOnce {
-            scope.launch {
-                tasksViews = TasksApi.getTasksViews(Counts.TaskViewBatchSize, 0)
-            }
-        }
         // body
         div {
             css {
                 display = Display.flex
                 flexDirection = FlexDirection.column
                 alignItems = AlignItems.center
-                marginTop = Sizes.NavHeight + Sizes.MuchBiggerMargin
+                marginTop = Sizes.Nav.Height + Sizes.MuchBiggerMargin
                 marginBottom = Sizes.MuchBiggerMargin
                 gap = Sizes.RegularGap
                 width = 100.pct
-                minHeight = 100.vh - Sizes.NavHeight - 2 * Sizes.MuchBiggerMargin
+                minHeight = 100.vh - Sizes.Nav.Height - 2 * Sizes.MuchBiggerMargin
             }
 
             // taskboard
             taskBoard {
-                tasks = tasksViews
+                scope = main_scope
             }
         }
-        bottom
-        nav
+        bottom {
+
+        }
+        nav {
+            page = NavPage.Archive
+        }
     }
 }
 

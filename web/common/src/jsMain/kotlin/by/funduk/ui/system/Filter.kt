@@ -42,7 +42,7 @@ val filterField = FC<FilterFieldProps> { props ->
 
             textFrame {
                 text = "rank"
-                size = Font.Size.Regular
+                size = Sizes.Font.Regular
                 margins = listOf(0.px, 0.px, 0.px, 0.px)
             }
 
@@ -106,7 +106,7 @@ val filterField = FC<FilterFieldProps> { props ->
 
             textFrame {
                 text = "tags"
-                size = Font.Size.Regular
+                size = Sizes.Font.Regular
                 margins = listOf(0.px, 0.px, 0.px, 0.px)
             }
 

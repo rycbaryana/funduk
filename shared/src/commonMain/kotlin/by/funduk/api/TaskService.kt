@@ -16,10 +16,17 @@ object TasksApi {
             }
         }.body()
 
-    suspend fun getTask(id: Int): Task =
+    suspend fun getTask(id: Int): Task? =
         client.get(kApiAddress) {
             url {
                 appendPathSegments("tasks", id.toString())
             }
-        }.body()
+        }.let{
+            println(it.status)
+            if (it.status != HttpStatusCode.OK) {
+                return null
+            } else {
+                return it.body<Task>()
+            }
+        }
 }

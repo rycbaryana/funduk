@@ -1,5 +1,6 @@
 package by.funduk.ui.system
 
+import by.funduk.api.TasksApi
 import by.funduk.model.Rank
 import by.funduk.model.Status
 import by.funduk.model.Tag
@@ -12,15 +13,23 @@ import emotion.react.*
 import web.cssom.*
 import web.html.HTMLDivElement
 
+import kotlinx.coroutines.*
+
 // taskboard + filter
 
 external interface TaskBoardProps : Props {
-    var tasks: List<TaskView>
+    var scope: CoroutineScope
 }
 
 val taskBoard = FC<TaskBoardProps> { props ->
     div {
+        var tasks by useState<List<TaskView>>(listOf())
 
+        useEffectOnce {
+            props.scope.launch {
+                tasks = TasksApi.getTasksViews(Counts.TaskViewBatchSize, 0)
+            }
+        }
         css {
             display = Display.flex
             flexDirection = FlexDirection.column
@@ -30,8 +39,7 @@ val taskBoard = FC<TaskBoardProps> { props ->
             gap = Sizes.RegularGap
         }
 
-        val content = useRef<HTMLDivElement>(null);
-        // content
+        val content = useRef<HTMLDivElement>(null)
 
         div {
             ref = content
@@ -43,7 +51,7 @@ val taskBoard = FC<TaskBoardProps> { props ->
             }
 
             // taskboard
-            if (props.tasks.isEmpty()) {
+            if (tasks.isEmpty()) {
                 div {
                     css {
                         display = Display.flex
@@ -53,7 +61,7 @@ val taskBoard = FC<TaskBoardProps> { props ->
                     }
 
                     textFrame {
-                        size = by.funduk.ui.general.Font.Size.Big
+                        size = Sizes.Font.Big
                         color = Pallete.Web.SecondPlan
                         text = "No tasks were found"
                     }
@@ -79,11 +87,10 @@ val taskBoard = FC<TaskBoardProps> { props ->
                             borderRadius = Sizes.BoxBorderRadius
                         }
 
-                        for (el in props.tasks) {
+                        for (el in tasks) {
                             taskView {
                                 task = el
                             }
-
                         }
 
                     }
@@ -104,20 +111,35 @@ val taskBoard = FC<TaskBoardProps> { props ->
 
         }
 
-        // load more
-        if (props.tasks.isNotEmpty()) {
-            div {
-                css {
-                    display = Display.flex
-                    height = Sizes.LoadMoreButtonHeight
-                    width = Sizes.LoadMoreButtonWidth
-                    borderRadius = Sizes.BoxBorderRadius
-                    boxShadow = Common.Shadow
-                    justifyContent = JustifyContent.center
-                }
+        val load_more = useRef<web.html.HTMLDivElement>(null)
 
-                textFrame {
-                    text = "Load more"
+        // load more
+        div {
+            css {
+                display = Display.flex
+                height = Sizes.LoadMoreButtonHeight
+                width = Sizes.LoadMoreButtonWidth
+                borderRadius = Sizes.BoxBorderRadius
+                boxShadow = Common.Shadow
+                justifyContent = JustifyContent.center
+                cursor = Cursor.pointer
+            }
+
+            ref = load_more
+
+            textFrame {
+                text = "Load more"
+            }
+
+            onClick = {
+                load_more.current?.attributeStyleMap?.set("visibility", "hidden")
+
+                props.scope.launch {
+                    val batch = TasksApi.getTasksViews(Counts.TaskViewBatchSize, tasks.size)
+                    tasks = tasks + batch
+                    if (batch.size == Counts.TaskViewBatchSize) {
+                        load_more.current?.attributeStyleMap?.set("visibility", "visible")
+                    }
                 }
             }
         }

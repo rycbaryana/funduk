@@ -10,8 +10,12 @@ import web.cssom.*
 
 external interface StaticTagBoardProps : Props {
     var direction: FlexDirection
+    var align: AlignItems
+    var justify: JustifyContent
     var padding: Length?
     var tags: List<Tag>
+    var height: Height
+    var width: Width
 }
 
 val staticTagBoard = FC<StaticTagBoardProps> { props ->
@@ -19,16 +23,15 @@ val staticTagBoard = FC<StaticTagBoardProps> { props ->
         val padding = props.padding ?: Sizes.SmallMargin
         css {
             display = Display.flex
-            height = 100.pct
-            width = 100.pct
+            height = props.height
+            width = props.width
         }
         div {
             css {
                 display = Display.flex
-                flexDirection = FlexDirection.column
-                alignItems = AlignItems.end
-                alignContent = AlignContent.end
-                justifyContent = JustifyContent.start
+                flexDirection = props.direction
+                alignItems = props.align
+                justifyContent = props.justify
                 flexWrap = FlexWrap.wrapReverse
                 margin = padding
                 width = 100.pct

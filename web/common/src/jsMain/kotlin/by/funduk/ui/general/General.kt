@@ -57,15 +57,6 @@ sealed interface Font {
     companion object {
         val Family = FontFamily.sansSerif
     }
-
-    sealed interface Size {
-        companion object {
-            val Bigger = 30.pt
-            val Big = 16.pt
-            val Regular = 11.pt
-            val Small = 7.pt
-        }
-    }
 }
 
 sealed interface Common {
@@ -82,6 +73,29 @@ sealed interface Sizes {
         }
     }
 
+    sealed interface Font {
+        companion object {
+            val Bigger = 30.pt
+            val Big = 16.pt
+            val Regular = 11.pt
+            val Small = 7.pt
+        }
+    }
+
+    sealed interface Nav {
+        companion object {
+            val Height = 28.pt
+            val SideInfoWidth = 100.px
+        }
+    }
+
+    sealed interface TaskStatement {
+        companion object {
+            val Width = 500.pt
+            val InfoWidth = 120.pt
+        }
+    }
+
     companion object {
         val SmallMargin = 2.pt
         val RegularMargin = 5.pt
@@ -95,7 +109,6 @@ sealed interface Sizes {
         val SmallGap = 5.pt
         val MicroGap = 2.pt
 
-        val NavHeight = 28.pt
         val BoxBorderRadius = 10.pt
 
         val TaskViewWidth = 500.pt
@@ -113,7 +126,7 @@ sealed interface Sizes {
         val MaxRankTagWidth = 50.pt
 
         val LoadMoreButtonHeight = 25.pt;
-        val LoadMoreButtonWidth = 70.pt;
+        val LoadMoreButtonWidth = 70.pt
     }
 }
 
@@ -125,7 +138,7 @@ sealed interface Counts {
     }
 
     companion object {
-        val TaskViewBatchSize = 10;
+        val TaskViewBatchSize = 1
     }
 }
 

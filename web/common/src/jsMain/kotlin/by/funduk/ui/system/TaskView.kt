@@ -6,6 +6,7 @@ import by.funduk.ui.general.Font
 
 import react.*
 import react.dom.html.ReactHTML.div
+import react.dom.html.ReactHTML.a
 import emotion.react.*
 import web.cssom.*
 
@@ -14,8 +15,10 @@ external interface TaskViewProps : Props {
 }
 
 val taskView = FC<TaskViewProps> { props ->
-    div {
+    a {
+        href = "task/${props.task.id}"
         css {
+            textDecoration = TextDecoration.solid
             display = Display.flex
             flexDirection = FlexDirection.row
             backgroundColor = Pallete.Web.Light
@@ -24,6 +27,7 @@ val taskView = FC<TaskViewProps> { props ->
             padding = 0.px;
             width = Sizes.TaskViewWidth
             height = Sizes.TaskViewHeight
+            cursor = Cursor.pointer
         }
 
         //left
@@ -58,7 +62,7 @@ val taskView = FC<TaskViewProps> { props ->
                 textFrame {
                     text = props.task.id.toString()
                     color = tc
-                    size = Font.Size.Small
+                    size = Sizes.Font.Small
                     margins = listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin)
                 }
 
@@ -80,7 +84,7 @@ val taskView = FC<TaskViewProps> { props ->
                 textFrame {
                     text = props.task.rank?.toString() ?: ""
                     color = tc
-                    size = Font.Size.Small
+                    size = Sizes.Font.Small
                 }
 
             }
@@ -120,6 +124,7 @@ val taskView = FC<TaskViewProps> { props ->
                 }
             }
 
+            println(props.task.tags)
             //tag list
             staticTagBoard {
                 direction = FlexDirection.column
@@ -128,5 +133,4 @@ val taskView = FC<TaskViewProps> { props ->
             }
         }
     }
-
 }

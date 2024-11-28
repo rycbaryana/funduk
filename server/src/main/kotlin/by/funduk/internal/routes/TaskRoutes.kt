@@ -22,7 +22,11 @@ fun Route.taskRoutes() {
         get("/{id}") {
             val id = call.parameters["id"]!!.toInt()
             val task = TaskService.get(id)
-            call.respond(task ?: HttpStatusCode.NotFound)
+            if (task == null) {
+                call.respond(HttpStatusCode.NotFound)
+            } else {
+                call.respond(HttpStatusCode.OK, task)
+            }
         }
         post {
             val task: Task = call.receive()

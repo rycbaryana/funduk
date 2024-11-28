@@ -12,7 +12,12 @@ import react.dom.html.ReactHTML.a
 import emotion.react.*
 import web.cssom.*
 
+enum class NavPage {
+    Archive
+}
+
 external interface NavProps : Props {
+    var page: NavPage?
 }
 
 val nav = FC<NavProps> { props ->
@@ -29,7 +34,7 @@ val nav = FC<NavProps> { props ->
             top = 0.px
             left = 0.px
             width = 100.pct
-            height = Sizes.NavHeight
+            height = Sizes.Nav.Height
             margin = 0.px
         }
 
@@ -43,27 +48,82 @@ val nav = FC<NavProps> { props ->
                 height = 100.pct
             }
 
-            textFrame {
-                forbbidSelection = true
-                text = kProjectName
-                color = Pallete.Web.DarkText
-                size = Font.Size.Big
-                margins = listOf(Sizes.RegularMargin, Sizes.RegularMargin, Sizes.BiggerMargin, Sizes.BiggerMargin)
+            a {
+                css {
+                    textDecoration = TextDecoration.solid
+                    display = Display.flex
+                    minWidth = Sizes.Nav.SideInfoWidth
+                    flexDirection = FlexDirection.row
+                    justifyContent = JustifyContent.start
+                }
+                href = "/"
+                textFrame {
+                    forbbidSelection = true
+                    text = kProjectName
+                    color = Pallete.Web.DarkText
+                    size = Sizes.Font.Big
+                    margins = listOf(Sizes.RegularMargin, Sizes.RegularMargin, Sizes.BiggerMargin, Sizes.BiggerMargin)
+                }
             }
 
             div {
                 css {
                     width = 100.pct
                     height = 100.pct
+
+                    display = Display.flex
+                    flexDirection = FlexDirection.row
+                    justifyContent = JustifyContent.center
+                    alignContent = AlignContent.center
+                    gap = Sizes.RegularGap
+                }
+
+                a {
+                    css {
+                        textDecoration = TextDecoration.solid
+                    }
+                    href = "/archive"
+
+                    div {
+                        css {
+                            display = Display.inlineBlock
+                        }
+                        textFrame {
+                            forbbidSelection = true
+                            text = "Archive"
+                            color = Pallete.Web.DarkText
+                            size = Sizes.Font.Regular
+                            margins =
+                                listOf(Sizes.RegularMargin, 0.px, Sizes.RegularMargin, Sizes.RegularMargin)
+                        }
+                        if (props.page == NavPage.Archive) {
+                            div {
+                                css {
+                                    height = 1.px
+                                    width = 100.pct
+                                    background = Pallete.Web.DarkText
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
-            textFrame {
-                forbbidSelection = true
-                text = "Me"
-                color = Pallete.Web.DarkText
-                size = Font.Size.Big
-                margins = listOf(Sizes.RegularMargin, Sizes.RegularMargin, Sizes.BiggerMargin, Sizes.BiggerMargin)
+            div {
+                css {
+                    display = Display.flex
+                    minWidth = Sizes.Nav.SideInfoWidth
+                    flexDirection = FlexDirection.row
+                    justifyContent = JustifyContent.end
+                }
+
+                textFrame {
+                    forbbidSelection = true
+                    text = "Me"
+                    color = Pallete.Web.DarkText
+                    size = Sizes.Font.Big
+                    margins = listOf(Sizes.RegularMargin, Sizes.RegularMargin, Sizes.BiggerMargin, Sizes.BiggerMargin)
+                }
             }
         }
     }
@@ -89,7 +149,7 @@ val bottomColumn = FC<BottomColumnProps> { props ->
 
         textFrame {
             text = props.title
-            size = Font.Size.Big
+            size = Sizes.Font.Big
         }
 
         for ((name, ref) in props.data) {
@@ -131,8 +191,10 @@ val bottom = FC<BottomProps> { props ->
             }
 
             //name + discript
-            div {
+            a {
+                href = "/"
                 css {
+                    textDecoration = TextDecoration.solid
                     display = Display.flex
                     flexDirection = FlexDirection.column
                     alignItems = AlignItems.center
@@ -141,14 +203,14 @@ val bottom = FC<BottomProps> { props ->
                 textFrame {
                     text = kProjectName
                     color = Pallete.Web.DarkText
-                    size = Font.Size.Bigger
+                    size = Sizes.Font.Bigger
                     margins = listOf(0.pt, 0.pt, Sizes.RegularMargin, Sizes.RegularMargin)
                 }
 
                 textFrame {
                     text = "competitive programming platform"
                     color = Pallete.Web.DarkText
-                    size = Font.Size.Regular
+                    size = Sizes.Font.Regular
                     margins = listOf(0.pt, 0.pt, Sizes.RegularMargin, Sizes.RegularMargin)
                 }
             }
