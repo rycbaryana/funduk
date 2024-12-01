@@ -1,3 +1,5 @@
+import io.ktor.plugin.features.*
+
 plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.ktor)
@@ -17,6 +19,27 @@ application {
 val browserDist by configurations.creating {
     isCanBeConsumed = false
     isCanBeResolved = true
+}
+
+ktor {
+    docker {
+        jreVersion.set(JavaVersion.VERSION_20)
+        localImageName.set("funduk-web")
+
+        portMappings.set(
+            listOf(
+                DockerPortMapping(8081, 8081, DockerPortMappingProtocol.TCP)
+            )
+        )
+        externalRegistry.set(
+
+            DockerImageRegistry.dockerHub(
+                appName = provider { "funduk-web" },
+                username = providers.environmentVariable("DOCKER_HUB_USERNAME"),
+                password = providers.environmentVariable("DOCKER_HUB_PASSWORD")
+            )
+        )
+    }
 }
 
 dependencies {

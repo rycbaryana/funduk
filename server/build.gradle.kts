@@ -1,3 +1,5 @@
+import io.ktor.plugin.features.*
+
 plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.ktor)
@@ -12,6 +14,26 @@ version = "1.0.0"
 application {
     mainClass.set("by.funduk.internal.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=${extra["io.ktor.development"] ?: "false"}")
+}
+
+ktor {
+    docker {
+        jreVersion.set(JavaVersion.VERSION_20)
+        localImageName.set("funduk-server")
+
+        portMappings.set(
+            listOf(
+                DockerPortMapping(8080, 8080, DockerPortMappingProtocol.TCP)
+            )
+        )
+        externalRegistry.set(
+            DockerImageRegistry.dockerHub(
+                appName = provider { "funduk-server" },
+                username = providers.environmentVariable("DOCKER_HUB_USERNAME"),
+                password = providers.environmentVariable("DOCKER_HUB_PASSWORD")
+            )
+        )
+    }
 }
 
 dependencies {
