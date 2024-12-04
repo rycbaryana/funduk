@@ -16,26 +16,6 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=${extra["io.ktor.development"] ?: "false"}")
 }
 
-ktor {
-    docker {
-        jreVersion.set(JavaVersion.VERSION_20)
-        localImageName.set("funduk-server")
-
-        portMappings.set(
-            listOf(
-                DockerPortMapping(8080, 8080, DockerPortMappingProtocol.TCP)
-            )
-        )
-        externalRegistry.set(
-            DockerImageRegistry.dockerHub(
-                appName = provider { "funduk-server" },
-                username = providers.environmentVariable("DOCKER_HUB_USERNAME"),
-                password = providers.environmentVariable("DOCKER_HUB_PASSWORD")
-            )
-        )
-    }
-}
-
 dependencies {
     implementation(projects.shared)
     implementation(libs.logback)
