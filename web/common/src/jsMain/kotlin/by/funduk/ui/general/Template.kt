@@ -48,13 +48,14 @@ val textFrame = FC<TextFrameProps> { props ->
 }
 
 
-external interface TagFrameProps : Props {
+external interface TagFrameProps : PropsWithChildren {
     var name: String
     var forbbidSelection: Boolean
     var color: Color?
     var back: Color?
     var size: FontSize?
     var margins: List<Length>?
+    var onClickCallback: (() -> Unit)?
 }
 
 val tagFrame = FC<TagFrameProps> { props ->
@@ -65,7 +66,12 @@ val tagFrame = FC<TagFrameProps> { props ->
         val margins =
             props.margins ?: listOf(Sizes.SmallMargin, Sizes.SmallMargin, Sizes.SmallMargin, Sizes.SmallMargin)
 
+        onClick = {
+            props.onClickCallback?.invoke()
+        }
+
         css {
+            cursor = Cursor.pointer
             borderRadius = Sizes.TagBorderRadius
             whiteSpace = WhiteSpace.nowrap
             position = Position.relative

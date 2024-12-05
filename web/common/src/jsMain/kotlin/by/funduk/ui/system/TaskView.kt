@@ -127,7 +127,9 @@ val taskView = FC<TaskViewProps> { props ->
             println(props.task.tags)
             //tag list
             staticTagBoard {
-                direction = FlexDirection.column
+                direction = FlexDirection.row
+                align = AlignItems.start
+                justify = JustifyContent.end
                 padding = 0.5 * (Sizes.TaskViewHeight - Counts.UI.NumberOfTagLinesInTaskView * Sizes.RegularTagHeight)
                 tags = props.task.tags
             }

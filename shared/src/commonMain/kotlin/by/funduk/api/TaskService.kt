@@ -22,7 +22,6 @@ object TasksApi {
                 appendPathSegments("tasks", id.toString())
             }
         }.let{
-            println(it.status)
             if (it.status != HttpStatusCode.OK) {
                 return null
             } else {
