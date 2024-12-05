@@ -14,8 +14,14 @@ sealed interface Pallete {
             val LightText = NamedColor.white
             val DarkText = NamedColor.black
             val Shadow = rgb(240, 240, 240)
-            val LightShadow = rgb(246, 246, 246)
+            val LightShadow = rgb(245, 245, 245)
             val Notification = Color("#ABEFA9")
+        }
+
+        sealed interface Button {
+            companion object {
+                val Border = Color("#B3B3B3")
+            }
         }
     }
 
@@ -89,6 +95,26 @@ sealed interface Sizes {
         }
     }
 
+    sealed interface Editor {
+        companion object {
+            val StandardHeight = 200.px
+            val MaxHeight = 500.px
+        }
+    }
+
+    sealed interface Button {
+        companion object {
+            val Border = 1.px
+            val Height = 20.px
+        }
+    }
+
+    sealed interface ItemList {
+        companion object {
+            val Width = 200.px;
+        }
+    }
+
     sealed interface TaskStatement {
         companion object {
             val Width = 500.pt
@@ -104,6 +130,8 @@ sealed interface Sizes {
         val MuchBiggerMargin = 20.pt
         val BottomMargin = 20.pt
         val BottomHeight = 300.pt
+
+        val RegularLimitsWidth = 38.px
 
         val RegularGap = 10.pt
         val SmallGap = 5.pt

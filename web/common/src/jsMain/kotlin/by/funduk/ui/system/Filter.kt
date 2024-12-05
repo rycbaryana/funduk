@@ -1,6 +1,6 @@
-package by.funduk.ui.general
+package by.funduk.ui.system
 
-import by.funduk.ui.system.tagBoard
+import by.funduk.ui.general.*
 import react.*
 import react.dom.html.ReactHTML.div
 import emotion.react.*
