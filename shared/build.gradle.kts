@@ -14,6 +14,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.ktor.serialization.json)
             implementation(libs.ktor.client.contentNegotiation)
+            implementation(libs.kotlinx.datetime)
         }
         jsMain.dependencies {
             implementation(libs.ktor.client.js)
