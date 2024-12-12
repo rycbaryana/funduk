@@ -1,10 +1,9 @@
-package by.funduk.internal.routes
+package by.funduk.routes
 
-import by.funduk.internal.AuthConfig
-import by.funduk.model.User
-import by.funduk.internal.services.UserService
-import by.funduk.internal.utils.checkPassword
-import by.funduk.internal.utils.hashPassword
+import by.funduk.AuthConfig
+import by.funduk.services.UserService
+import by.funduk.utils.checkPassword
+import by.funduk.utils.hashPassword
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.http.*

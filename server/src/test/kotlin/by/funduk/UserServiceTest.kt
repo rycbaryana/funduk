@@ -1,7 +1,7 @@
 package by.funduk
 
-import by.funduk.internal.db.Users
-import by.funduk.internal.services.UserService
+import by.funduk.db.Users
+import by.funduk.services.UserService
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import kotlin.test.assertEquals

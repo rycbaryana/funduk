@@ -1,7 +1,5 @@
-package by.funduk.internal.utils
+package by.funduk.utils
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 import org.mindrot.jbcrypt.BCrypt
 
 fun hashPassword(password: String): String {

@@ -1,6 +1,5 @@
 package by.funduk
 
-import by.funduk.internal.module
 import kotlin.test.Test
 import io.ktor.server.testing.*
 import io.ktor.client.request.*

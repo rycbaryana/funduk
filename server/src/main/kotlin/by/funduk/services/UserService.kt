@@ -1,7 +1,7 @@
-package by.funduk.internal.services
+package by.funduk.services
 
-import by.funduk.internal.db.Users
-import by.funduk.internal.db.query
+import by.funduk.db.Users
+import by.funduk.db.query
 import by.funduk.model.User
 import org.jetbrains.exposed.sql.*
 

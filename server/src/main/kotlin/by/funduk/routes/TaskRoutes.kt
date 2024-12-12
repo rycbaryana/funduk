@@ -1,7 +1,7 @@
-package by.funduk.internal.routes
+package by.funduk.routes
 
 import by.funduk.model.Task
-import by.funduk.internal.services.TaskService
+import by.funduk.services.TaskService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*

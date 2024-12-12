@@ -1,4 +1,4 @@
-package by.funduk.internal.plugins
+package by.funduk.plugins
 
 import io.ktor.server.application.*
 import org.jetbrains.exposed.sql.Database
