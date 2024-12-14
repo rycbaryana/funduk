@@ -10,9 +10,9 @@ object TestService {
 
     private val testingScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    suspend fun test(submission: Submission) = testingScope.launch {
+    fun test(submission: Submission) = testingScope.launch {
         NotificationService.notify(submission.userId, submission.taskId, StatusMessage(Status.Running))
-        delay(2.seconds)
+        delay(5.seconds)
         NotificationService.notify(submission.userId, submission.taskId, StatusMessage(Status.OK))
     }
 }

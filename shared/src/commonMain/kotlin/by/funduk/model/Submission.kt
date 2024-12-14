@@ -13,3 +13,11 @@ data class Submission(
     val language: Language,
     val testInfo: TestInfo? = null,
 )
+
+@Serializable
+data class RawSubmission(
+    val taskId: Int,
+    val userId: Int,
+    val code: String,
+    val language: Language
+)

@@ -12,20 +12,29 @@ import web.events.addEventListener
 import web.html.HTMLDivElement
 import web.window.window
 import web.dom.document
+import web.html.HTMLInputElement
 
 
-external interface ItemListFieldProps<Item> : Props {
+data class Searcher<Item>(val data: List<Pair<String, Item>>) {
+    fun Search(pref: String): List<Pair<String, Item>> {
+        return data.filter { it.first.lowercase().startsWith(pref) }
+    }
+}
+
+external interface ItemListFieldProps<Item> : PropsWithRef<HTMLDivElement> {
     var items: List<Pair<String, Item>>
     var onClickCallback: ((Item) -> Unit)?
 }
 
-fun<Item> GetItemList(): FC<ItemListFieldProps<Item>> {
-
-    return FC { props ->
+fun <Item> GetItemList():
+        ForwardRefExoticComponent<ItemListFieldProps<Item>> {
+    return ForwardRef { props ->
+        val refSearch = useRef<HTMLInputElement>(null)
+        val searcher = Searcher(props.items)
+        var current_items by useState(props.items)
         div {
-//            val ref_this = useRef<HTMLDivElement>(null)
-
-//            props.ref = ref_this
+            ref = props.ref
+            tabIndex = 0
             css {
                 display = Display.flex
                 flexDirection = FlexDirection.column
@@ -36,28 +45,29 @@ fun<Item> GetItemList(): FC<ItemListFieldProps<Item>> {
                 background = Pallete.Web.Light
                 padding = Sizes.SmallMargin
                 gap = Sizes.SmallMargin
+                outline = 0.px
             }
 
             inputField {
+                ref = refSearch
+                onChangeCallback = { str ->
+                    current_items = searcher.Search(str.lowercase())
+                }
+
+                onEnterCallback = {
+                    val items = current_items
+                    if (items.isNotEmpty()) {
+                        refSearch.current?.value = ""
+                        props.onClickCallback?.invoke(items[0].second)
+                        current_items = props.items
+                    }
+                }
             }
 
-            var current_items by useState(props.items)
-
-//            val handleClickOutside = { event: MouseEvent ->
-//                val target = event.target as? HTMLElement
-//                val block = document.getElementById("toggleBlock")
-//                if (block != null && !block.contains(target)) {
-//                    ref_this.current?.style?.visibility = "hidden"
-//                }
-//            }
-//
-//            useEffectWithCleanup {
-//                window.addEventListener(EventType("click"), handleClickOutside)
-//
-//                onCleanup {
-//                    window.removeEventListener(EventType("click"), handleClickOutside)
-//                }
-//            }
+            onFocus = {e ->
+                refSearch.current?.focus()
+                e.stopPropagation()
+            }
 
             if (current_items.isEmpty()) {
                 textFrame {
@@ -78,6 +88,8 @@ fun<Item> GetItemList(): FC<ItemListFieldProps<Item>> {
                         tagFrame {
                             name = title
                             onClickCallback = {
+                                refSearch.current?.value = ""
+                                current_items = props.items
                                 props.onClickCallback?.invoke(item)
                             }
                         }

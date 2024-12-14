@@ -5,7 +5,9 @@ import react.*
 import react.dom.client.createRoot
 import react.dom.html.ReactHTML.div
 import react.dom.html.ReactHTML.textarea
+import react.dom.html.ReactHTML.input
 import react.dom.html.ReactHTML.select
+import kotlinx.datetime.*
 
 import emotion.react.*
 
@@ -14,18 +16,27 @@ import web.cssom.px
 import web.cssom.*
 
 import by.funduk.api.TasksApi
-import by.funduk.model.Lang
-import by.funduk.model.Task
+import by.funduk.api.SubmissionApi
+import by.funduk.model.*
 import by.funduk.ui.general.*
 import by.funduk.ui.system.*
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import org.w3c.dom.events.Event
+import org.w3c.files.Blob
+import react.dom.events.EventHandler
+import web.events.ProgressEvent
+import org.w3c.files.FileReader
 import web.html.HTMLTextAreaElement
 import web.html.HTMLDivElement
+import web.html.HTMLInputElement
+import web.html.InputType
 
 var task_id = 0
 
 var main_scope = MainScope()
+
+var previousSubmission = ""
 
 external interface TextFieldWithNameProps : Props {
     var name: String
@@ -117,16 +128,23 @@ val sampleField = FC<SampleFieldProps> { props ->
     }
 }
 
-val langItemList = GetItemList<Lang>();
+val langItemList = GetItemList<Language>()
 
 private val TaskPage = FC<Props> { props ->
+    val refLang = useRef<HTMLDivElement>(null)
+    val list = useRef<HTMLDivElement>(null)
+    val fileInput = useRef<HTMLInputElement>(null)
+    val editor = useRef<HTMLTextAreaElement>(null)
+
+    var canSubmit by useState(true)
+    var language by useState(Language.entries[0])
+    var fileButtonName by useState<String?>(null)
+
     div {
         css {
             padding = 0.px
             margin = 0.px
         }
-
-        val refLang = useRef<HTMLDivElement>(null)
 
         // body
         div {
@@ -148,7 +166,6 @@ private val TaskPage = FC<Props> { props ->
                 main_scope.launch {
                     val loaded_task = TasksApi.getTask(task_id)
 
-                    println(loaded_task)
                     if (loaded_task == null) {
                         text_on_null = "We do not recognize this task"
                     }
@@ -357,9 +374,11 @@ private val TaskPage = FC<Props> { props ->
                                 text = "Optional field with notes and clues."
                             }
 
+                            //submission section
                             div {
                                 css {
                                     display = Display.flex
+                                    position = Position.relative
                                     flexDirection = FlexDirection.column
                                     borderRadius = Sizes.BoxBorderRadius
                                     backgroundColor = Pallete.Web.Light
@@ -378,6 +397,7 @@ private val TaskPage = FC<Props> { props ->
                                     css {
                                         display = Display.flex
                                         flexDirection = FlexDirection.column
+                                        alignContent = AlignContent.start
                                         gap = Sizes.SmallMargin
                                         margin = Sizes.RegularMargin
                                         marginTop = 0.px
@@ -412,15 +432,14 @@ private val TaskPage = FC<Props> { props ->
 
                                             onClick = { e ->
                                                 refLang.current?.style?.visibility = "visible"
-                                                refLang.current?.style?.left = "${e.pageX - window.scrollX.toInt()}px"
-                                                refLang.current?.style?.top = "${e.pageY- window.scrollY.toInt()}px"
+                                                refLang.current?.focus()
+                                                e.stopPropagation()
                                             }
 
                                             textFrame {
-                                                text = Lang.entries[0].lang
-                                                margins = listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin);
+                                                text = language.text
+                                                margins = listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin)
                                             }
-
                                         }
 
                                         // load file
@@ -440,18 +459,46 @@ private val TaskPage = FC<Props> { props ->
                                                 cursor = Cursor.pointer
                                             }
 
+                                            input {
+                                                css {
+                                                    position = Position.fixed
+                                                    visibility = Visibility.hidden
+                                                }
+
+                                                ref = fileInput
+                                                accept = language.extensions.map { ".$it" }.joinToString(" ")
+                                                type = InputType.file
+                                                multiple = false
+
+                                                onChange = { e ->
+                                                    val file = e.target.files?.get(0)
+
+                                                    if (file != null) {
+//                                                        val reader = FileReader()
+//                                                        reader.onload = { e ->
+//                                                            val data = (reader.result as String?)
+//                                                        }
+//                                                        reader.readAsArrayBuffer(file)
+
+
+                                                    }
+
+                                                    fileButtonName = file?.name ?: "load file"
+                                                }
+                                            }
+
+                                            onClick = {
+                                                fileInput.current?.click()
+                                            }
+
                                             textFrame {
-                                                text = "load file"
-                                                margins = listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin);
+                                                text = fileButtonName ?: "load file"
+                                                margins = listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin)
                                             }
                                         }
                                     }
 
                                     //text field
-                                    div {
-
-                                    }
-
                                     div {
                                         css {
                                             display = Display.flex
@@ -464,6 +511,7 @@ private val TaskPage = FC<Props> { props ->
                                         }
 
                                         textarea {
+                                            ref = editor
                                             className = ClassName("editor")
                                             autoCapitalize = "off"
                                             autoCorrect = "off"
@@ -485,7 +533,177 @@ private val TaskPage = FC<Props> { props ->
                                         }
 
                                     }
+
+                                    // submit button
+                                    div {
+                                        css {
+                                            display = Display.flex
+                                            flexDirection = FlexDirection.row
+                                        }
+                                        div {
+                                            css {
+                                                display = Display.flex
+                                                justifyContent = JustifyContent.center
+                                                alignItems = AlignItems.center
+
+                                                borderRadius = Sizes.Button.Height / 2
+                                                height = Sizes.Button.Height
+
+                                                background = Pallete.Web.Light
+                                                border = Sizes.Button.Border
+                                                borderStyle = LineStyle.solid
+                                                borderColor = Pallete.Web.Button.Border
+                                                cursor = Cursor.pointer
+                                            }
+
+                                            onClick = { e ->
+                                                // submition
+
+                                                if (canSubmit) {
+                                                    canSubmit = false
+                                                    val code = editor.current?.value ?: ""
+                                                    val submission = RawSubmission(
+                                                        task_id,
+                                                        1,
+                                                        editor.current?.value ?: "",
+                                                        language
+                                                    )
+                                                    main_scope.launch {
+                                                        val id = SubmissionApi.submit(submission)
+                                                        println(id)
+                                                        canSubmit = true
+                                                    }
+                                                }
+                                            }
+
+                                            textFrame {
+                                                text = if (canSubmit) "submit" else "sending..."
+                                                margins = listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin)
+                                            }
+                                        }
+                                    }
                                 }
+
+                                // lang list context menu
+                                div {
+                                    css {
+                                        position = Position.absolute
+                                        top = 4 * Sizes.RegularMargin + Sizes.Button.Height + Sizes.Font.Regular
+                                        left = Sizes.RegularMargin
+                                        visibility = Visibility.hidden
+                                        outline = 0.px
+                                    }
+
+                                    tabIndex = 0
+
+                                    ref = refLang
+
+                                    langItemList {
+                                        ref = list
+                                        items = enumValues<Language>().toList().map { Pair(it.text, it) }
+                                        onClickCallback = { item ->
+                                            language = item
+                                            refLang.current?.style?.visibility = "hidden"
+                                        }
+                                    }
+
+                                    onFocus = { e ->
+                                        list.current?.focus()
+                                        e.stopPropagation()
+                                    }
+
+                                    onClick = { e ->
+                                        e.stopPropagation()
+                                    }
+                                }
+                            }
+
+
+                            //submission section
+                            div {
+                                css {
+                                    display = Display.flex
+                                    position = Position.relative
+                                    flexDirection = FlexDirection.column
+                                    borderRadius = Sizes.BoxBorderRadius
+                                    backgroundColor = Pallete.Web.Light
+                                    alignItems = AlignItems.start
+                                    width = Sizes.TaskStatement.Width
+                                }
+
+                                // box name
+                                textFrame {
+                                    text = "submitions"
+                                    bold = true
+                                }
+
+                                //submit content
+                                div {
+                                    css {
+                                        display = Display.flex
+                                        padding = Sizes.RegularMargin
+                                        paddingTop = 0.px
+                                        width = 100.pct
+                                    }
+
+                                    submissionTable {
+                                        width = 100.pct - 2 * Sizes.RegularMargin
+                                        submissions = listOf(
+                                            SubmissionView(
+                                                113424,
+                                                1,
+                                                1,
+                                                "task name",
+                                                "user name",
+                                                LocalDateTime(2023, 12, 12, 15, 30),
+                                                Language.Python3,
+                                                TestInfo(
+                                                    Status.OK, 99, 123, 1243232454
+                                                )
+                                            ),
+
+                                            SubmissionView(
+                                                10133424,
+                                                1,
+                                                1,
+                                                "task name",
+                                                "user name",
+                                                LocalDateTime(2024, 12, 12, 15, 30),
+                                                Language.CPP23_GCC14,
+                                                TestInfo(
+                                                    Status.WA, 12, 1423, 134345645
+                                                )
+                                            ),
+
+                                            SubmissionView(
+                                                1133424,
+                                                1,
+                                                1,
+                                                "task name",
+                                                "user name",
+                                                LocalDateTime(2024, 12, 12, 5, 30),
+                                                Language.CPP23_GCC14,
+                                                TestInfo(
+                                                    Status.Running, 243, 1423, 134
+                                                )
+                                            ),
+
+                                            SubmissionView(
+                                                1133424,
+                                                1,
+                                                1,
+                                                "task name",
+                                                "user name",
+                                                LocalDateTime(2024, 12, 12, 5, 30),
+                                                Language.CPP23_GCC14,
+                                                TestInfo(
+                                                    Status.Fail, 99, 1423, 134
+                                                )
+                                            )
+                                        )
+                                    }
+                                }
+
                             }
 
                         }
@@ -535,16 +753,14 @@ private val TaskPage = FC<Props> { props ->
         nav {
         }
 
-        // lang list context menu
-        div {
-            css {
-                position = Position.fixed
-                visibility = Visibility.hidden
-            }
+        val hideContext: (Event?) -> Unit = {
+            refLang.current?.style?.visibility = "hidden"
+        }
 
-            ref = refLang
-            langItemList {
-                items = enumValues<Lang>().toList().map { Pair(it.lang, it) }
+        useEffectWithCleanup {
+            window.addEventListener("click", hideContext) // Добавляем обработчик клика
+            onCleanup {
+                window.removeEventListener("click", hideContext)
             }
         }
     }

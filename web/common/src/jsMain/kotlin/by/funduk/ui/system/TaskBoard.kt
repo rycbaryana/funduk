@@ -27,7 +27,7 @@ val taskBoard = FC<TaskBoardProps> { props ->
 
         useEffectOnce {
             props.scope.launch {
-                tasks = TasksApi.getTasksViews(Counts.TaskViewBatchSize, 0)
+                tasks = TasksApi.getTaskViews(Counts.TaskViewBatchSize, 0)
             }
         }
         css {
@@ -135,7 +135,7 @@ val taskBoard = FC<TaskBoardProps> { props ->
                 load_more.current?.attributeStyleMap?.set("visibility", "hidden")
 
                 props.scope.launch {
-                    val batch = TasksApi.getTasksViews(Counts.TaskViewBatchSize, tasks.size)
+                    val batch = TasksApi.getTaskViews(Counts.TaskViewBatchSize, tasks.size)
                     tasks = tasks + batch
                     if (batch.size == Counts.TaskViewBatchSize) {
                         load_more.current?.attributeStyleMap?.set("visibility", "visible")

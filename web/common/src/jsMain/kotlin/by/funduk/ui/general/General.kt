@@ -79,6 +79,18 @@ sealed interface Sizes {
         }
     }
 
+    sealed interface SubmissionView {
+        companion object {
+            val Height = 25.px
+            val IdWidth = 70.px
+            val DateWidth = 125.px
+            val LanguageWidth = 125.px
+            val TimeWidth = 80.px
+            val MemoryWidth = 80.px
+            val StatusWidth = 80.px
+        }
+    }
+
     sealed interface Font {
         companion object {
             val Bigger = 30.pt

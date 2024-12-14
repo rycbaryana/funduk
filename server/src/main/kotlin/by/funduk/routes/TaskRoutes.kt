@@ -1,6 +1,8 @@
 package by.funduk.routes
 
+import by.funduk.model.Submission
 import by.funduk.model.Task
+import by.funduk.services.SubmitService
 import by.funduk.services.TaskService
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -9,7 +11,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.taskRoutes() {
-    route("/tasks") {
+    route("/task") {
         get {
             call.respond(TaskService.allTasks())
         }

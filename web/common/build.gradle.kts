@@ -17,6 +17,7 @@ kotlin {
             implementation(jsLibs.csstype)
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:${libs.versions.kotlinx.coroutines.get()}")
             implementation(libs.ktor.serialization.json)
+            implementation(libs.kotlinx.datetime)
             implementation(projects.shared)
         }
     }

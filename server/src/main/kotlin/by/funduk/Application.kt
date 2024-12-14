@@ -127,14 +127,14 @@ fun Application.module() {
             )
         }
         UserService.apply {
-            addUser("vlad", "pumpum")
+            addUser("vlad", "tumpon")
         }
     }
 
 
     routing {
         get("/ping") {
-            call.respondText("pong")
+            call.respondText("SHUT UP!!! STOP BOTHERING ME FOR NO REASON!!! I'M TRYING TO WORK!")
             NotificationService.notify(
                 1, 1, CommentMessage(
                     Comment(

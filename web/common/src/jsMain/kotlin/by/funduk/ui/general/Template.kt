@@ -5,6 +5,7 @@ import react.dom.html.ReactHTML.span
 import react.dom.html.ReactHTML.input
 import emotion.react.*
 import web.cssom.*
+import web.html.HTMLInputElement
 
 external interface TextFrameProps : Props {
     var text: String
@@ -61,7 +62,7 @@ external interface TagFrameProps : PropsWithChildren {
 val tagFrame = FC<TagFrameProps> { props ->
     span {
         val mcolor = props.color ?: Pallete.Web.LightText
-        val back = props.color ?: Pallete.Web.SecondPlan
+        val back = props.back ?: Pallete.Web.SecondPlan
         val size = props.size ?: Sizes.Font.Small
         val margins =
             props.margins ?: listOf(Sizes.SmallMargin, Sizes.SmallMargin, Sizes.SmallMargin, Sizes.SmallMargin)
@@ -104,12 +105,14 @@ val tagFrame = FC<TagFrameProps> { props ->
     }
 }
 
-external interface InputFieldProps : Props {
-
+external interface InputFieldProps : PropsWithRef<HTMLInputElement> {
+    var onChangeCallback: ((String) -> Unit)?
+    var onEnterCallback: (() -> Unit)?
 }
 
-val inputField = FC<InputFieldProps> { props ->
+val inputField = ForwardRef<InputFieldProps> { props ->
     input {
+        ref = props.ref
         css {
             display = Display.flex
             outline = 0.px
@@ -122,6 +125,16 @@ val inputField = FC<InputFieldProps> { props ->
             height = Sizes.SearchHeight
             borderRadius = 0.5 * Sizes.SearchHeight
             borderStyle = LineStyle.hidden
+        }
+
+        onChange = { e ->
+            props.onChangeCallback?.invoke(e.target.value)
+        }
+
+        onKeyDown = { e->
+            if (e.key == "Enter") {
+                props.onEnterCallback?.invoke()
+            }
         }
         placeholder = "Search..."
     }

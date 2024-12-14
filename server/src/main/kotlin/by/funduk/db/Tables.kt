@@ -31,10 +31,10 @@ object Submissions : IntIdTable("submissions") {
     val userId = Submissions.reference("user_id", Users, onDelete = ReferenceOption.CASCADE)
     val submitTime = datetime("submit_time")
     val code = text("code")
-    val language = varchar("language", 8)
+    val language = varchar("language", 16)
     val timeElapsed = integer("time_elapsed").nullable()
     val memoryUsed = integer("memory_used").nullable()
-    val verdict = varchar("verdict", 2).nullable()
+    val verdict = varchar("verdict", 1).nullable()
 }
 
 object Comments : IntIdTable("comments") {

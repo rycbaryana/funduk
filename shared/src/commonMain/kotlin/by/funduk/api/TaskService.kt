@@ -7,10 +7,10 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 
 object TasksApi {
-    suspend fun getTasksViews(count: Int, offset: Int): List<TaskView> =
+    suspend fun getTaskViews(count: Int, offset: Int): List<TaskView> =
         client.get(kApiAddress) {
             url {
-                appendPathSegments("tasks", "views")
+                appendPathSegments("task", "views")
                 parameters.append("count", count.toString())
                 parameters.append("offset", offset.toString())
             }
@@ -19,7 +19,7 @@ object TasksApi {
     suspend fun getTask(id: Int): Task? =
         client.get(kApiAddress) {
             url {
-                appendPathSegments("tasks", id.toString())
+                appendPathSegments("task", id.toString())
             }
         }.let{
             if (it.status != HttpStatusCode.OK) {

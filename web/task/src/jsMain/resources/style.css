@@ -2,6 +2,10 @@ textarea::-webkit-scrollbar {
     display: none;
 }
 
+::-webkit-scrollbar {
+  width: 0;
+}
+
 .editor {
     resize: none;
     width: 100%;
