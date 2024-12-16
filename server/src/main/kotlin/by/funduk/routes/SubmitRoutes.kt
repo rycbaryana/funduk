@@ -3,8 +3,6 @@ package by.funduk.routes
 import by.funduk.model.Submission
 import by.funduk.model.RawSubmission
 import by.funduk.services.SubmitService
-import by.funduk.services.TaskService
-import by.funduk.services.TestService
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -27,11 +25,8 @@ fun Route.submitRoutes() {
                 rawSubmission.language,
                 null
             )
-            val id = SubmitService.insert(submission)
+            val id = SubmitService.submitAndTest(submission)
             call.respond(HttpStatusCode.OK, id)
-            TestService.test(
-                submission
-            )
         }
     }
 

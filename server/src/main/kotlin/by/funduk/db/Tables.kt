@@ -8,8 +8,8 @@ import org.jetbrains.exposed.sql.javatime.datetime
 object Tasks : IntIdTable("tasks") {
     val name = varchar("name", 50)
     val statement = text("statement")
-    val rank = integer("task_rank")
-    val solvedCount = integer("rank").default(0)
+    val rank = integer("rank")
+    val solvedCount = integer("solved").default(0)
 }
 
 object Tags : IntIdTable("tags") {
@@ -27,14 +27,20 @@ object Users : IntIdTable("users") {
 }
 
 object Submissions : IntIdTable("submissions") {
-    val taskId = Submissions.reference("task_id", Tasks, onDelete = ReferenceOption.CASCADE)
-    val userId = Submissions.reference("user_id", Users, onDelete = ReferenceOption.CASCADE)
+    val taskId = Submissions.reference("task_id", Tasks)
+    val userId = Submissions.reference("user_id", Users)
+    val testId = TestInfos.reference("test_id", TestInfos)
     val submitTime = datetime("submit_time")
     val code = text("code")
     val language = varchar("language", 16)
-    val timeElapsed = integer("time_elapsed").nullable()
-    val memoryUsed = integer("memory_used").nullable()
-    val verdict = varchar("verdict", 1).nullable()
+
+}
+
+object TestInfos : IntIdTable("test_info") {
+    val status = varchar("status", 8)
+    val currentTest = integer("current_test").default(0)
+    val time = integer("time").nullable()
+    val memory = integer("memory").nullable()
 }
 
 object Comments : IntIdTable("comments") {

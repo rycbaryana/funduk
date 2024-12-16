@@ -1,172 +1,84 @@
 package by.funduk.services
 
-import by.funduk.db.Submissions
-import by.funduk.db.Tasks
-import by.funduk.db.Users
-import by.funduk.db.query
+import by.funduk.db.*
 import by.funduk.model.*
 import by.funduk.ui.SubmissionView
-import kotlinx.coroutines.delay
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
-import kotlinx.datetime.*
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 
 object SubmitService {
 
-    suspend fun submitAndTest(submission: Submission) {
-        insert(submission)
+    suspend fun submitAndTest(submission: Submission): Int {
+        val id = insert(submission)
         TestService.test(submission)
+        return id
     }
 
     suspend fun insert(submission: Submission): Int = query {
-//        val valid = Submissions.selectAll().where{(Submissions.taskId eq  submission.taskId) and (Submissions.userId eq submission.userId) and (Submissions.code eq submission.code)}.empty()
         Submissions.insert {
             it[taskId] = submission.taskId
             it[userId] = submission.userId
             it[submitTime] = submission.submitTime.toJavaLocalDateTime()
             it[code] = submission.code
-            it[language] = submission.language.text
+            it[language] = submission.language.toString()
         }[Submissions.id].value
     }
 
     suspend fun getSubmission(id: Int): Submission? = query {
-        Submissions.selectAll()
+        (Submissions innerJoin TestInfos).selectAll()
             .where { Submissions.id eq id }
             .map {
-                Language.entries.find { entry -> entry.text == it[Submissions.language] }?.let { it1 ->
-                    val verdict = it[Submissions.verdict]
-                    val time = it[Submissions.timeElapsed]
-                    val mem = it[Submissions.memoryUsed]
-
-                    println("database $verdict $time $mem")
-
-                    var info: TestInfo? = null
-                    if (verdict != null && time != null && mem != null) {
-                        info = Status.entries.find { entry -> entry.toString().startsWith(verdict) }?.let { it2 ->
-                            TestInfo(
-                                it2,
-                                0,
-                                time,
-                                mem
-                            )
-                        }
-                    }
-
-                    Submission(
-                        it[Submissions.id].value,
-                        it[Submissions.taskId].value,
-                        it[Submissions.userId].value,
-                        it[Submissions.submitTime].toKotlinLocalDateTime(),
-                        it[Submissions.code],
-                        it1,
-                        info
+                Submission(
+                    id = it[Submissions.id].value,
+                    taskId = it[Submissions.taskId].value,
+                    userId = it[Submissions.userId].value,
+                    submitTime = it[Submissions.submitTime].toKotlinLocalDateTime(),
+                    code = it[Submissions.code],
+                    language = Language.valueOf(it[Submissions.language]),
+                    testInfo = TestInfo(
+                        Status.valueOf(it[TestInfos.status]),
+                        it[TestInfos.currentTest],
+                        it[TestInfos.time],
+                        it[TestInfos.memory]
                     )
-                }
+                )
             }
             .singleOrNull()
     }
 
     suspend fun getSubmissionView(id: Int): SubmissionView? = query {
-        Submissions.selectAll()
+        (Submissions innerJoin TestInfos innerJoin Tasks innerJoin Users).selectAll()
             .where { Submissions.id eq id }
             .map {
-                Language.entries.find { entry -> entry.text == it[Submissions.language] }?.let { it1 ->
-                    val verdict = it[Submissions.verdict]
-                    val time = it[Submissions.timeElapsed]
-                    val mem = it[Submissions.memoryUsed]
-
-                    var info: TestInfo? = null
-                    if (verdict != null && time != null && mem != null) {
-                        info = Status.entries.find { entry -> entry.toString().startsWith(verdict) }?.let { it2 ->
-                            TestInfo(
-                                it2,
-                                0,
-                                time,
-                                mem
-                            )
-                        }
-                    }
-
-                    Tasks.selectAll()
-                        .where { Tasks.id eq it[Submissions.taskId].value }
-                        .map {
-                            it[Tasks.name]
-                        }
-                        .singleOrNull()?.let { it2 ->
-                            Users.selectAll().where { Users.id eq it[Submissions.userId].value }
-                                .map {
-                                    it[Users.username]
-                                }
-                                .singleOrNull()?.let { it3 ->
-                                    SubmissionView(
-                                        it[Submissions.id].value,
-                                        it[Submissions.taskId].value,
-                                        it[Submissions.userId].value,
-                                        it2,
-                                        it3,
-                                        it[Submissions.submitTime].toKotlinLocalDateTime(),
-                                        it1,
-                                        info
-                                    )
-                                }
-                        }
-                }
+                getViewFromRow(it)
             }
             .singleOrNull()
     }
 
     suspend fun getSubmissionViews(taskId: Int, userId: Int, count: Int, offset: Int): List<SubmissionView> = query {
         Submissions.selectAll().limit(count).offset(offset.toLong())
-            .where { (Submissions.taskId eq taskId) and (Submissions.userId eq userId) }
-            .map {
-                Language.entries.find { entry -> entry.text == it[Submissions.language] }?.let { it1 ->
-                    val verdict = it[Submissions.verdict]
-                    val time = it[Submissions.timeElapsed]
-                    val mem = it[Submissions.memoryUsed]
-
-                    var info: TestInfo? = null
-                    if (verdict != null && time != null && mem != null) {
-                        info = Status.entries.find { entry -> entry.toString().startsWith(verdict) }?.let { it2 ->
-                            TestInfo(
-                                it2,
-                                0,
-                                time,
-                                mem
-                            )
-                        }
-                    }
-
-                    Tasks.selectAll()
-                        .where { Tasks.id eq it[Submissions.taskId].value }
-                        .map {
-                            it[Tasks.name]
-                        }
-                        .singleOrNull()?.let { it2 ->
-                            Users.selectAll().where { Users.id eq it[Submissions.userId].value }
-                                .map {
-                                    it[Users.username]
-                                }
-                                .singleOrNull()?.let { it3 ->
-                                    SubmissionView(
-                                        it[Submissions.id].value,
-                                        it[Submissions.taskId].value,
-                                        it[Submissions.userId].value,
-                                        it2,
-                                        it3,
-                                        it[Submissions.submitTime].toKotlinLocalDateTime(),
-                                        it1,
-                                        info
-                                    )
-                                }
-                        }
-                }
-            }.filterNotNull()
+            .where { (Submissions.taskId eq taskId) and (Submissions.userId eq userId) }.mapNotNull {
+                getViewFromRow(it)
+            }
     }
+
+    private fun getViewFromRow(row: ResultRow): SubmissionView = SubmissionView(
+        id = row[Submissions.id].value,
+        taskId = row[Submissions.taskId].value,
+        userId = row[Submissions.userId].value,
+        taskName = row[Tasks.name],
+        userName = row[Users.username],
+        submitTime = row[Submissions.submitTime].toKotlinLocalDateTime(),
+        language = Language.valueOf(row[Submissions.language]),
+        testInfo = TestInfo(
+            Status.valueOf(row[TestInfos.status]),
+            row[TestInfos.currentTest],
+            row[TestInfos.time],
+            row[TestInfos.memory]
+        )
+    )
 
     suspend fun delete(id: Int): Boolean {
         return query {

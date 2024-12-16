@@ -9,5 +9,8 @@ fun Application.configureDatabase(): Database {
         user = "root",
         driver = "org.h2.Driver",
         password = ""
+//        "jdbc:postgresql://localhost:5432/postgres",
+//        user = "funduk",
+//        password = "1234"
     )
 }
