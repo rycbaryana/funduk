@@ -33,7 +33,6 @@ object Submissions : IntIdTable("submissions") {
     val submitTime = datetime("submit_time")
     val code = text("code")
     val language = varchar("language", 16)
-
 }
 
 object TestInfos : IntIdTable("test_info") {

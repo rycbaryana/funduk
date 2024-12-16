@@ -9,7 +9,7 @@ import io.ktor.http.*
 import kotlinx.datetime.LocalDateTime
 
 object SubmissionApi {
-    suspend fun getSubmissionViews(taskId: Int, userId: Int, count: Int, offset: Int): List<SubmissionView> =
+    suspend fun getSubmissionViews(taskId: Int, userId: Int, count: Int = Int.MAX_VALUE, offset: Int = 0): List<SubmissionView> =
         client.get(kApiAddress) {
             url {
                 appendPathSegments("submission", "views")
@@ -33,7 +33,7 @@ object SubmissionApi {
             return null
         }
 
-        return rep.body<Int>();
+        return rep.body<Int>()
     }
 
     suspend fun getSubmission(id: Int): Submission? =

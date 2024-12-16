@@ -45,7 +45,7 @@ val submissionView = FC<SubmissionViewProps> { props ->
             }
             textFrame {
                 text = props.submission?.id?.toString() ?: "no data"
-                margins = listOf(0.px, 0.px, 0.px, 0.px)
+                margins = listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin)
             }
         }
 
@@ -57,7 +57,7 @@ val submissionView = FC<SubmissionViewProps> { props ->
                 maxWidth = Sizes.SubmissionView.DateWidth
             }
             textFrame {
-                text = props.submission?.submitTime?.toString() ?: "no data"
+                text = "${props.submission?.submitTime?.date.toString()} ${props.submission?.submitTime?.time?.hour}:${props.submission?.submitTime?.time?.minute}"
                 margins = listOf(0.px, 0.px, 0.px, 0.px)
             }
         }
@@ -145,7 +145,7 @@ val submissionView = FC<SubmissionViewProps> { props ->
                 minWidth = Sizes.SubmissionView.StatusWidth
                 maxWidth = Sizes.SubmissionView.StatusWidth
             }
-            var stat_text = status?.name ?: "no_status"
+            var stat_text = status?.name ?: "in queue"
 
             if ( status != null && status != Status.Fail && status != Status.OK) {
                 stat_text += " ${props.submission?.testInfo?.test}"
@@ -153,7 +153,7 @@ val submissionView = FC<SubmissionViewProps> { props ->
 
             tagFrame {
                 name = stat_text
-                back = colorOfStatus[status] ?: NamedColor.transparent
+                back = colorOfStatus[status] ?: Pallete.Web.SecondPlan
             }
         }
     }
@@ -171,7 +171,7 @@ val submissionTable = FC<SubmissionTableProps> { props ->
             width = props.width
             height = props.height
             display = Display.flex
-            flexDirection = FlexDirection.column
+            flexDirection = FlexDirection.columnReverse
         }
 
         for (i in 0 until props.submissions.size) {

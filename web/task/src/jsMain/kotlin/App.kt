@@ -139,6 +139,7 @@ private val TaskPage = FC<Props> { props ->
     var canSubmit by useState(true)
     var language by useState(Language.entries[0])
     var fileButtonName by useState<String?>(null)
+    var submissionViewList by useState<List<SubmissionView>>(listOf())
 
     div {
         css {
@@ -162,8 +163,10 @@ private val TaskPage = FC<Props> { props ->
             var text_on_null by useState("Loading task...")
             var task by useState<Task?>(null)
 
+            // preparations
             useEffectOnce {
                 main_scope.launch {
+                    print("launching")
                     val loaded_task = TasksApi.getTask(task_id)
 
                     if (loaded_task == null) {
@@ -171,6 +174,9 @@ private val TaskPage = FC<Props> { props ->
                     }
                     document.title = loaded_task?.name ?: "unknown task"
                     task = loaded_task
+
+                    submissionViewList = SubmissionApi.getSubmissionViews(task_id, 1)
+                    print(submissionViewList)
                 }
             }
 
@@ -620,90 +626,40 @@ private val TaskPage = FC<Props> { props ->
 
 
                             //submission section
-                            div {
-                                css {
-                                    display = Display.flex
-                                    position = Position.relative
-                                    flexDirection = FlexDirection.column
-                                    borderRadius = Sizes.BoxBorderRadius
-                                    backgroundColor = Pallete.Web.Light
-                                    alignItems = AlignItems.start
-                                    width = Sizes.TaskStatement.Width
-                                }
-
-                                // box name
-                                textFrame {
-                                    text = "submitions"
-                                    bold = true
-                                }
-
-                                //submit content
+                            if (submissionViewList.isNotEmpty()) {
                                 div {
                                     css {
                                         display = Display.flex
-                                        padding = Sizes.RegularMargin
-                                        paddingTop = 0.px
-                                        width = 100.pct
+                                        position = Position.relative
+                                        flexDirection = FlexDirection.column
+                                        borderRadius = Sizes.BoxBorderRadius
+                                        backgroundColor = Pallete.Web.Light
+                                        alignItems = AlignItems.start
+                                        width = Sizes.TaskStatement.Width
                                     }
 
-                                    submissionTable {
-                                        width = 100.pct - 2 * Sizes.RegularMargin
-                                        submissions = listOf(
-                                            SubmissionView(
-                                                113424,
-                                                1,
-                                                1,
-                                                "task name",
-                                                "user name",
-                                                LocalDateTime(2023, 12, 12, 15, 30),
-                                                Language.Python3,
-                                                TestInfo(
-                                                    Status.OK, 99, 123, 1243232454
-                                                )
-                                            ),
-
-                                            SubmissionView(
-                                                10133424,
-                                                1,
-                                                1,
-                                                "task name",
-                                                "user name",
-                                                LocalDateTime(2024, 12, 12, 15, 30),
-                                                Language.CPP23_GCC14,
-                                                TestInfo(
-                                                    Status.WA, 12, 1423, 134345645
-                                                )
-                                            ),
-
-                                            SubmissionView(
-                                                1133424,
-                                                1,
-                                                1,
-                                                "task name",
-                                                "user name",
-                                                LocalDateTime(2024, 12, 12, 5, 30),
-                                                Language.CPP23_GCC14,
-                                                TestInfo(
-                                                    Status.Running, 243, 1423, 134
-                                                )
-                                            ),
-
-                                            SubmissionView(
-                                                1133424,
-                                                1,
-                                                1,
-                                                "task name",
-                                                "user name",
-                                                LocalDateTime(2024, 12, 12, 5, 30),
-                                                Language.CPP23_GCC14,
-                                                TestInfo(
-                                                    Status.Fail, 99, 1423, 134
-                                                )
-                                            )
-                                        )
+                                    // box name
+                                    textFrame {
+                                        text = "submitions"
+                                        bold = true
                                     }
+
+                                    //submit content
+                                    div {
+                                        css {
+                                            display = Display.flex
+                                            padding = Sizes.RegularMargin
+                                            paddingTop = 0.px
+                                            width = 100.pct
+                                        }
+
+                                        submissionTable {
+                                            width = 100.pct - 2 * Sizes.RegularMargin
+                                            submissions = submissionViewList
+                                        }
+                                    }
+
                                 }
-
                             }
 
                         }

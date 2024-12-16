@@ -26,6 +26,11 @@ object SubmitService {
         }[Submissions.id].value
     }
 
+    //TODO updates test info in submission with id "id"
+    suspend fun update(id: Int, info: TestInfo): Int = query {
+        1
+    }
+
     suspend fun getSubmission(id: Int): Submission? = query {
         (Submissions innerJoin TestInfos).selectAll()
             .where { Submissions.id eq id }
