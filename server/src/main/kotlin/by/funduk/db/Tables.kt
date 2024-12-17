@@ -29,7 +29,7 @@ object Users : IntIdTable("users") {
 object Submissions : IntIdTable("submissions") {
     val taskId = Submissions.reference("task_id", Tasks)
     val userId = Submissions.reference("user_id", Users)
-    val testId = TestInfos.reference("test_id", TestInfos)
+    val testId = Submissions.reference("test_id", TestInfos)
     val submitTime = datetime("submit_time")
     val code = text("code")
     val language = varchar("language", 16)

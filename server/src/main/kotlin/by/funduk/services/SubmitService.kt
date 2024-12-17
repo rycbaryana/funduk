@@ -12,7 +12,15 @@ object SubmitService {
 
     suspend fun submitAndTest(submission: Submission): Int {
         val id = insert(submission)
-        TestService.test(submission)
+        TestService.test(Submission(
+            id,
+            submission.taskId,
+            submission.userId,
+            submission.submitTime,
+            submission.code,
+            submission.language,
+            submission.testInfo,
+        ))
         return id
     }
 
@@ -63,7 +71,7 @@ object SubmitService {
     }
 
     suspend fun getSubmissionViews(taskId: Int, userId: Int, count: Int, offset: Int): List<SubmissionView> = query {
-        Submissions.selectAll().limit(count).offset(offset.toLong())
+        (Submissions innerJoin TestInfos innerJoin Tasks innerJoin Users).selectAll().limit(count).offset(offset.toLong())
             .where { (Submissions.taskId eq taskId) and (Submissions.userId eq userId) }.mapNotNull {
                 getViewFromRow(it)
             }
