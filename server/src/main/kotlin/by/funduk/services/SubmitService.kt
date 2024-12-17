@@ -12,15 +12,7 @@ object SubmitService {
 
     suspend fun submitAndTest(submission: Submission): Int {
         val id = insert(submission)
-        TestService.test(Submission(
-            id,
-            submission.taskId,
-            submission.userId,
-            submission.submitTime,
-            submission.code,
-            submission.language,
-            submission.testInfo,
-        ))
+        TestService.test(submission.copy(id = id))
         return id
     }
 
@@ -31,16 +23,22 @@ object SubmitService {
             it[submitTime] = submission.submitTime.toJavaLocalDateTime()
             it[code] = submission.code
             it[language] = submission.language.toString()
+            it[status] = submission.testInfo.status.toString()
+            it[time] = submission.testInfo.time
+            it[memory] = submission.testInfo.memory
         }[Submissions.id].value
     }
 
-    //TODO updates test info in submission with id "id"
-    suspend fun update(id: Int, info: TestInfo): Int = query {
-        1
+    suspend fun updateTestInfo(id: Int, info: TestInfo): Int = query {
+        Submissions.update({ Submissions.id eq id }) {
+            it[Submissions.status] = info.status.toString()
+            it[Submissions.time] = info.time
+            it[Submissions.memory] = info.memory
+        }
     }
 
     suspend fun getSubmission(id: Int): Submission? = query {
-        (Submissions innerJoin TestInfos).selectAll()
+        Submissions.selectAll()
             .where { Submissions.id eq id }
             .map {
                 Submission(
@@ -51,30 +49,34 @@ object SubmitService {
                     code = it[Submissions.code],
                     language = Language.valueOf(it[Submissions.language]),
                     testInfo = TestInfo(
-                        Status.valueOf(it[TestInfos.status]),
-                        it[TestInfos.currentTest],
-                        it[TestInfos.time],
-                        it[TestInfos.memory]
+                        Status.valueOf(it[Submissions.status]),
+                        0,
+                        it[Submissions.time],
+                        it[Submissions.memory]
                     )
                 )
             }
             .singleOrNull()
-    }
+    }?.also { it.testInfo.test = TestService.getCurrentTest(it.id!!) }
 
     suspend fun getSubmissionView(id: Int): SubmissionView? = query {
-        (Submissions innerJoin TestInfos innerJoin Tasks innerJoin Users).selectAll()
+        (Submissions innerJoin Tasks innerJoin Users).selectAll()
             .where { Submissions.id eq id }
             .map {
                 getViewFromRow(it)
             }
             .singleOrNull()
-    }
+    }?.also { it.testInfo.test = TestService.getCurrentTest(it.id!!) }
 
     suspend fun getSubmissionViews(taskId: Int, userId: Int, count: Int, offset: Int): List<SubmissionView> = query {
-        (Submissions innerJoin TestInfos innerJoin Tasks innerJoin Users).selectAll().limit(count).offset(offset.toLong())
+        (Submissions innerJoin Tasks innerJoin Users).selectAll().limit(count).offset(offset.toLong())
             .where { (Submissions.taskId eq taskId) and (Submissions.userId eq userId) }.mapNotNull {
                 getViewFromRow(it)
             }
+    }.also { views ->
+        views.filter { it.testInfo.status == Status.Running }.forEach {
+            it.testInfo.test = TestService.getCurrentTest(it.id!!)
+        }
     }
 
     private fun getViewFromRow(row: ResultRow): SubmissionView = SubmissionView(
@@ -86,10 +88,10 @@ object SubmitService {
         submitTime = row[Submissions.submitTime].toKotlinLocalDateTime(),
         language = Language.valueOf(row[Submissions.language]),
         testInfo = TestInfo(
-            Status.valueOf(row[TestInfos.status]),
-            row[TestInfos.currentTest],
-            row[TestInfos.time],
-            row[TestInfos.memory]
+            Status.valueOf(row[Submissions.status]),
+            0,
+            row[Submissions.time],
+            row[Submissions.memory]
         )
     )
 

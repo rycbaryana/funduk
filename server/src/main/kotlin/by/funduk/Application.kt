@@ -93,8 +93,8 @@ fun Application.module() {
     val database = configureDatabase()
 
     transaction(database) {
-        SchemaUtils.drop(Tasks, Users, Tags, TasksTags, Submissions, Comments, TestInfos)
-        SchemaUtils.create(Tasks, Users, Tags, TasksTags, Submissions, Comments, TestInfos)
+        SchemaUtils.drop(Tasks, Users, Tags, TasksTags, Submissions, Comments)
+        SchemaUtils.create(Tasks, Users, Tags, TasksTags, Submissions, Comments)
     }
 
 

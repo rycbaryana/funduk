@@ -29,17 +29,12 @@ object Users : IntIdTable("users") {
 object Submissions : IntIdTable("submissions") {
     val taskId = Submissions.reference("task_id", Tasks)
     val userId = Submissions.reference("user_id", Users)
-    val testId = Submissions.reference("test_id", TestInfos)
     val submitTime = datetime("submit_time")
     val code = text("code")
     val language = varchar("language", 16)
-}
-
-object TestInfos : IntIdTable("test_info") {
     val status = varchar("status", 8)
-    val currentTest = integer("current_test").default(0)
-    val time = integer("time").nullable()
-    val memory = integer("memory").nullable()
+    val time = integer("time").default(0)
+    val memory = integer("memory").default(0)
 }
 
 object Comments : IntIdTable("comments") {

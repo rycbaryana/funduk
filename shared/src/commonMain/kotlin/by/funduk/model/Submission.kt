@@ -11,7 +11,7 @@ data class Submission(
     val submitTime: LocalDateTime,
     val code: String,
     val language: Language,
-    val testInfo: TestInfo? = null,
+    val testInfo: TestInfo = TestInfo(),
 )
 
 @Serializable

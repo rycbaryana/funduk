@@ -22,9 +22,9 @@ fun Route.submitRoutes() {
                 rawSubmission.userId,
                 Clock.System.now().toLocalDateTime(TimeZone.of("Europe/Moscow")),
                 rawSubmission.code,
-                rawSubmission.language,
-                null
+                rawSubmission.language
             )
+            println(submission)
             val id = SubmitService.submitAndTest(submission)
             call.respond(HttpStatusCode.OK, id)
         }

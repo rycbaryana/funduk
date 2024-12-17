@@ -13,5 +13,5 @@ data class SubmissionView(
     val userName: String,
     val submitTime: LocalDateTime,
     val language: Language,
-    val testInfo: TestInfo? = null,
+    val testInfo: TestInfo,
 )
