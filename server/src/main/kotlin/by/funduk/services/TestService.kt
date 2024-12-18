@@ -32,15 +32,19 @@ object TestService {
         endTesting(submission)
     }
 
-    private fun beginTesting(submission: Submission) = testInfos.put(submission.id!!, submission.testInfo)
+    private fun beginTesting(submission: Submission) {
+        testInfos.put(submission.id!!, submission.testInfo)
+    }
 
-    private fun endTesting(submission: Submission) = testInfos.remove(submission.id!!)
+    private fun endTesting(submission: Submission) {
+        testInfos.remove(submission.id!!)
+    }
 
     private suspend fun updateTestInfo(submission: Submission, testInfo: TestInfo) {
         val id = submission.id!!
         testInfos[id] = testInfo
         SubmitService.updateTestInfo(id, testInfo)
-        NotificationService.notify(submission.userId, submission.taskId, StatusMessage(testInfo))
+        NotificationService.notify(submission.taskId, submission.userId, StatusMessage(testInfo))
     }
 
     fun getCurrentTest(submissionId: Int): Int = testInfos[submissionId]?.test ?: 0

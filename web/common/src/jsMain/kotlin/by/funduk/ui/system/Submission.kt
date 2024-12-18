@@ -16,6 +16,7 @@ import web.html.HTMLDivElement
 import web.window.window
 import web.dom.document
 import web.html.HTMLInputElement
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 external interface SubmissionViewProps : Props {
@@ -57,7 +58,8 @@ val submissionView = FC<SubmissionViewProps> { props ->
                 maxWidth = Sizes.SubmissionView.DateWidth
             }
             textFrame {
-                text = "${props.submission?.submitTime?.date.toString()} ${props.submission?.submitTime?.time?.hour}:${props.submission?.submitTime?.time?.minute}"
+                text =
+                    "${props.submission?.submitTime?.date.toString()} ${props.submission?.submitTime?.time?.hour}:${props.submission?.submitTime?.time?.minute}"
                 margins = listOf(0.px, 0.px, 0.px, 0.px)
             }
         }
@@ -147,7 +149,7 @@ val submissionView = FC<SubmissionViewProps> { props ->
             }
             var stat_text = status?.name ?: "in queue"
 
-            if ( status != null && status != Status.Fail && status != Status.OK) {
+            if (status != null && status != Status.Fail && status != Status.OK) {
                 stat_text += " ${props.submission?.testInfo?.test}"
             }
 
@@ -171,19 +173,27 @@ val submissionTable = FC<SubmissionTableProps> { props ->
             width = props.width
             height = props.height
             display = Display.flex
-            flexDirection = FlexDirection.columnReverse
+            flexDirection = FlexDirection.column
         }
 
-        for (i in 0 until props.submissions.size) {
-            var background = NamedColor.transparent
-            if (i % 2 == 1) {
-                background = Pallete.Web.SecondLight
+        div {
+            css {
+                display = Display.flex
+                flexDirection = FlexDirection.column
+                width = 100.pct
             }
+            for (i in 0 until props.submissions.size) {
+                var background = NamedColor.transparent
+                if (i % 2 == 1) {
+                    background = Pallete.Web.SecondLight
+                }
 
-            submissionView {
-                backgroundColor = background
-                submission = props.submissions[i]
+                submissionView {
+                    backgroundColor = background
+                    submission = props.submissions[i]
+                }
             }
         }
+
     }
 }

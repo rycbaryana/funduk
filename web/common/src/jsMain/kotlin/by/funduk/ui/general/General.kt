@@ -175,6 +175,12 @@ sealed interface Counts {
         companion object {
             val NumberOfTagLinesInTaskView = 2;
         }
+
+        sealed interface SubmissionTable {
+            companion object {
+                val DefaultNumberOfSubmissions = 5
+            }
+        }
     }
 
     companion object {

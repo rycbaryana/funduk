@@ -41,19 +41,28 @@ fun Route.submitRoutes() {
             }
         }
 
-        get("/views") {
-            val taskId = call.request.queryParameters["taskId"]?.toInt()
-            val userId = call.request.queryParameters["userId"]?.toInt()
-            val count = call.request.queryParameters["count"]?.toInt() ?: Int.MAX_VALUE
-            val offset = call.request.queryParameters["offset"]?.toInt() ?: 0
+        route("/views") {
+            get {
+                val taskId = call.request.queryParameters["taskId"]?.toInt()
+                val userId = call.request.queryParameters["userId"]?.toInt()
+                val count = call.request.queryParameters["count"]?.toInt() ?: Int.MAX_VALUE
+                val offset = call.request.queryParameters["offset"]?.toInt() ?: 0
 
-            if (taskId == null || userId == null) {
-                call.respond(HttpStatusCode.BadRequest)
-            } else {
-                val views = SubmitService.getSubmissionViews(taskId, userId, count, offset)
-                call.respond(views)
+                if (taskId == null || userId == null) {
+                    call.respond(HttpStatusCode.BadRequest)
+                } else {
+                    val views = SubmitService.getSubmissionViews(taskId, userId, count, offset)
+                    call.respond(views)
+                }
+            }
+
+            get("/{id}") {
+                val id = call.parameters["id"]!!.toInt()
+                val view = SubmitService.getSubmissionView(id)
+                call.respond(view ?: HttpStatusCode.NotFound)
             }
         }
+
     }
 
 }

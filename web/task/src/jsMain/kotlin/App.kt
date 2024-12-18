@@ -6,8 +6,6 @@ import react.dom.client.createRoot
 import react.dom.html.ReactHTML.div
 import react.dom.html.ReactHTML.textarea
 import react.dom.html.ReactHTML.input
-import react.dom.html.ReactHTML.select
-import kotlinx.datetime.*
 
 import emotion.react.*
 
@@ -23,16 +21,13 @@ import by.funduk.ui.system.*
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.w3c.dom.events.Event
-import org.w3c.files.Blob
-import react.dom.events.EventHandler
-import web.events.ProgressEvent
-import org.w3c.files.FileReader
 import web.html.HTMLTextAreaElement
 import web.html.HTMLDivElement
 import web.html.HTMLInputElement
 import web.html.InputType
+import kotlin.math.min
 
-var task_id = 0
+var taskId = 0
 
 var main_scope = MainScope()
 
@@ -140,6 +135,7 @@ private val TaskPage = FC<Props> { props ->
     var language by useState(Language.entries[0])
     var fileButtonName by useState<String?>(null)
     var submissionViewList by useState<List<SubmissionView>>(listOf())
+    var isShortened by useState(true)
 
     div {
         css {
@@ -160,23 +156,26 @@ private val TaskPage = FC<Props> { props ->
                 minHeight = 100.vh - Sizes.Nav.Height - 2 * Sizes.MuchBiggerMargin
             }
 
-            var text_on_null by useState("Loading task...")
+            var textOnNull by useState("Loading task...")
             var task by useState<Task?>(null)
 
             // preparations
             useEffectOnce {
+
                 main_scope.launch {
-                    print("launching")
-                    val loaded_task = TasksApi.getTask(task_id)
+                    val loaded_task = TasksApi.getTask(taskId)
 
                     if (loaded_task == null) {
-                        text_on_null = "We do not recognize this task"
+                        textOnNull = "We do not recognize this task"
+                    } else {
+                        SubmissionApi.initWebSocket(taskId) {
+                            println("got message: $it")
+                        }
                     }
                     document.title = loaded_task?.name ?: "unknown task"
                     task = loaded_task
 
-                    submissionViewList = SubmissionApi.getSubmissionViews(task_id, 1)
-                    print(submissionViewList)
+                    submissionViewList = SubmissionApi.getSubmissionViews(taskId, 1, Counts.UI.SubmissionTable.DefaultNumberOfSubmissions)
                 }
             }
 
@@ -192,7 +191,7 @@ private val TaskPage = FC<Props> { props ->
                     textFrame {
                         size = Sizes.Font.Big
                         color = Pallete.Web.SecondPlan
-                        text = text_on_null
+                        text = textOnNull
                     }
 
                 }
@@ -562,21 +561,24 @@ private val TaskPage = FC<Props> { props ->
                                                 cursor = Cursor.pointer
                                             }
 
+                                            // submission
                                             onClick = { e ->
-                                                // submition
-
                                                 if (canSubmit) {
                                                     canSubmit = false
-                                                    val code = editor.current?.value ?: ""
                                                     val submission = RawSubmission(
-                                                        task_id,
+                                                        taskId,
                                                         1,
                                                         editor.current?.value ?: "",
                                                         language
                                                     )
                                                     main_scope.launch {
                                                         val id = SubmissionApi.submit(submission)
-                                                        println(id)
+                                                        if (id == null) {
+                                                           // invalid submission
+                                                        } else {
+                                                            submissionViewList = listOf(SubmissionApi.getSubmissionView(id)).plus(submissionViewList)
+                                                                .subList(0, if (isShortened) min(submissionViewList.size, Counts.UI.SubmissionTable.DefaultNumberOfSubmissions) else submissionViewList.size)
+                                                        }
                                                         canSubmit = true
                                                     }
                                                 }
@@ -640,7 +642,7 @@ private val TaskPage = FC<Props> { props ->
 
                                     // box name
                                     textFrame {
-                                        text = "submitions"
+                                        text = "submissions"
                                         bold = true
                                     }
 
@@ -648,6 +650,7 @@ private val TaskPage = FC<Props> { props ->
                                     div {
                                         css {
                                             display = Display.flex
+                                            flexDirection = FlexDirection.column
                                             padding = Sizes.RegularMargin
                                             paddingTop = 0.px
                                             width = 100.pct
@@ -656,6 +659,41 @@ private val TaskPage = FC<Props> { props ->
                                         submissionTable {
                                             width = 100.pct - 2 * Sizes.RegularMargin
                                             submissions = submissionViewList
+                                        }
+
+                                        // all submissions button
+                                        div {
+                                            css {
+                                                display = Display.flex
+                                                justifyContent = JustifyContent.center
+                                            }
+                                            div {
+                                                css {
+                                                    display = Display.inlineBlock
+                                                    cursor = Cursor.pointer
+                                                }
+                                                textFrame {
+                                                    text = if (isShortened) "all submissions" else "shorten"
+                                                    size = Sizes.Font.Small
+                                                    color = Pallete.Web.SecondPlan
+                                                }
+                                            }
+
+                                            onClick = {
+                                                val was = isShortened
+                                                isShortened = !isShortened
+                                                if (was) {
+                                                    main_scope.launch {
+                                                        submissionViewList =
+                                                            SubmissionApi.getSubmissionViews(taskId, 1)
+                                                    }
+                                                } else {
+                                                    main_scope.launch {
+                                                        submissionViewList =
+                                                            SubmissionApi.getSubmissionViews(taskId, 1, Counts.UI.SubmissionTable.DefaultNumberOfSubmissions)
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
 
@@ -723,7 +761,7 @@ private val TaskPage = FC<Props> { props ->
 }
 
 fun start() {
-    task_id = window.location.href.split("/").lastOrNull()?.toIntOrNull() ?: 2
+    taskId = window.location.href.split("/").lastOrNull()?.toIntOrNull() ?: 2
 
     val container = document.getElementById("root") ?: error("Couldn't find root container!")
     createRoot(container).render(TaskPage.create())

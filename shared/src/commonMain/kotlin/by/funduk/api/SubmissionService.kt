@@ -2,14 +2,18 @@ package by.funduk.api
 
 import by.funduk.model.*
 import by.funduk.ui.SubmissionView
-import by.funduk.ui.TaskView
 import io.ktor.client.call.*
+import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import kotlinx.datetime.LocalDateTime
 
 object SubmissionApi {
-    suspend fun getSubmissionViews(taskId: Int, userId: Int, count: Int = Int.MAX_VALUE, offset: Int = 0): List<SubmissionView> =
+    suspend fun getSubmissionViews(
+        taskId: Int,
+        userId: Int,
+        count: Int = Int.MAX_VALUE,
+        offset: Int = 0
+    ): List<SubmissionView> =
         client.get(kApiAddress) {
             url {
                 appendPathSegments("submission", "views")
@@ -17,6 +21,21 @@ object SubmissionApi {
                 parameters.append("userId", userId.toString())
                 parameters.append("count", count.toString())
                 parameters.append("offset", offset.toString())
+            }
+        }.body()
+
+    suspend fun initWebSocket(id: Int, onReceive: (Message) -> Unit) =
+        client.webSocket("$kServerAddress/notifications/$id") {
+            while (true) {
+                val message = receiveDeserialized<Message>()
+                onReceive(message)
+            }
+        }
+
+    suspend fun getSubmissionView(id: Int): SubmissionView =
+        client.get(kApiAddress) {
+            url {
+                appendPathSegments("submission", "views", id.toString())
             }
         }.body()
 
@@ -48,4 +67,6 @@ object SubmissionApi {
                 return it.body<Submission>()
             }
         }
+
+
 }

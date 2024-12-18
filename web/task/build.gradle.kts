@@ -15,6 +15,7 @@ kotlin {
                 implementation(jsLibs.reactDom)
                 implementation(jsLibs.emotion)
                 implementation(jsLibs.csstype)
+                implementation(libs.ktor.client.websockets)
                 implementation(libs.kotlinx.datetime)
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:${libs.versions.kotlinx.coroutines.get()}")

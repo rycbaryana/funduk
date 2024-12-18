@@ -30,7 +30,7 @@ object NotificationService {
         }
     }
 
-    suspend fun notify(userId: Int, taskId: Int, message: Message) {
+    suspend fun notify(taskId: Int, userId: Int, message: Message) {
         val client = subscribers[taskId]?.first {
             it.userId == userId
         }
