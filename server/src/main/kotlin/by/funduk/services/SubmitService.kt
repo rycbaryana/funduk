@@ -77,6 +77,8 @@ object SubmitService {
         views.filter { it.testInfo.status == Status.Running }.forEach {
             it.testInfo.test = TestService.getCurrentTest(it.id!!)
         }
+    }.sortedByDescending {
+        it.submitTime
     }
 
     private fun getViewFromRow(row: ResultRow): SubmissionView = SubmissionView(
