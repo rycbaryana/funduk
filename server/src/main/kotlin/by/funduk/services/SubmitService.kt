@@ -69,7 +69,7 @@ object SubmitService {
     }?.also { it.testInfo.test = TestService.getCurrentTest(it.id!!) }
 
     suspend fun getSubmissionViews(taskId: Int, userId: Int, count: Int, offset: Int): List<SubmissionView> = query {
-        (Submissions innerJoin Tasks innerJoin Users).selectAll().limit(count).offset(offset.toLong())
+        (Submissions innerJoin Tasks innerJoin Users).selectAll().limit(count).offset(offset.toLong()).orderBy(Submissions.submitTime to SortOrder.DESC)
             .where { (Submissions.taskId eq taskId) and (Submissions.userId eq userId) }.mapNotNull {
                 getViewFromRow(it)
             }
@@ -77,8 +77,6 @@ object SubmitService {
         views.filter { it.testInfo.status == Status.Running }.forEach {
             it.testInfo.test = TestService.getCurrentTest(it.id!!)
         }
-    }.sortedByDescending {
-        it.submitTime
     }
 
     private fun getViewFromRow(row: ResultRow): SubmissionView = SubmissionView(
