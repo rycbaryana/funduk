@@ -6,6 +6,8 @@ import io.ktor.client.call.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import io.ktor.websocket.*
+import kotlinx.serialization.json.Json
 
 object SubmissionApi {
     suspend fun getSubmissionViews(
@@ -26,9 +28,14 @@ object SubmissionApi {
 
     suspend fun initWebSocket(id: Int, onReceive: (Message) -> Unit) =
         client.webSocket("$kServerAddress/notifications/$id") {
-            while (true) {
-                val message = receiveDeserialized<Message>()
-                onReceive(message)
+            for (message in incoming) {
+                when (message) {
+                    is Frame.Text -> {
+                        val receivedMessage = Json.decodeFromString<Message>(message.readText())
+                        onReceive(receivedMessage)
+                    }
+                    else -> {}
+                }
             }
         }
 
