@@ -12,29 +12,36 @@ object TestService {
 
     private val testingScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    private val currentTest = Collections.synchronizedMap(mutableMapOf<Int, Int>())
+    private val testInfos = Collections.synchronizedMap(mutableMapOf<Int, TestInfo>())
 
     fun test(submission: Submission) = testingScope.launch {
-        val id = submission.id!!
+        beginTesting(submission)
+        updateTestInfo(submission, TestInfo(Status.Running, 1, 0, 0))
         delay(1.seconds)
-        SubmitService.updateTestInfo(id, TestInfo(Status.Running, 1, 0, 0))
-        NotificationService.notify(submission.userId, submission.taskId, StatusMessage(Status.Running, 1))
+        updateTestInfo(submission, TestInfo(Status.Running, 1, 0, 0))
         delay(3.seconds)
-        SubmitService.updateTestInfo(id, TestInfo(Status.Running, 5, 0, 0))
-        NotificationService.notify(submission.userId, submission.taskId, StatusMessage(Status.Running, 5))
+        updateTestInfo(submission, TestInfo(Status.Running, 5, 0, 0))
         delay(5.seconds)
-        SubmitService.updateTestInfo(id, TestInfo(Status.Running, 12, 0, 0))
-        NotificationService.notify(submission.userId, submission.taskId, StatusMessage(Status.Running, 12))
+        updateTestInfo(submission, TestInfo(Status.Running, 12, 0, 0))
         delay(4.seconds)
-        SubmitService.updateTestInfo(id, TestInfo(Status.Running, 26, 0, 0))
-        NotificationService.notify(submission.userId, submission.taskId, StatusMessage(Status.Running, 26))
+        updateTestInfo(submission, TestInfo(Status.Running, 26, 0, 0))
         delay(9.seconds)
-        SubmitService.updateTestInfo(id, TestInfo(Status.Running, 39, 0, 0))
-        NotificationService.notify(submission.userId, submission.taskId, StatusMessage(Status.Running, 39))
+        updateTestInfo(submission, TestInfo(Status.Running, 39, 0, 0))
         delay(1.seconds)
-        SubmitService.updateTestInfo(id, TestInfo(Status.OK, 40, 1234, 234567654))
-        NotificationService.notify(submission.userId, submission.taskId, StatusMessage(Status.OK))
+        updateTestInfo(submission, TestInfo(Status.OK, 40, 1234, 234567654))
+        endTesting(submission)
     }
 
-    fun getCurrentTest(submissionId: Int): Int = currentTest.getOrDefault(submissionId, 0)
+    private fun beginTesting(submission: Submission) = testInfos.put(submission.id!!, submission.testInfo)
+
+    private fun endTesting(submission: Submission) = testInfos.remove(submission.id!!)
+
+    private suspend fun updateTestInfo(submission: Submission, testInfo: TestInfo) {
+        val id = submission.id!!
+        testInfos[id] = testInfo
+        SubmitService.updateTestInfo(id, testInfo)
+        NotificationService.notify(submission.userId, submission.taskId, StatusMessage(testInfo))
+    }
+
+    fun getCurrentTest(submissionId: Int): Int = testInfos[submissionId]?.test ?: 0
 }
