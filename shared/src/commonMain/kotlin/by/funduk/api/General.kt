@@ -11,7 +11,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonEncoder
 
 const val kApiAddress = "http://127.0.0.1:8080/api"
-const val kServerAddress = "http://127.0.0.1:8080"
+const val kServerWebSocketAddress = "ws://127.0.0.1:8080"
 
 val client = HttpClient() {
     install(WebSockets) {

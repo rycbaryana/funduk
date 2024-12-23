@@ -11,7 +11,7 @@ enum class MessageType {
 sealed class Message
 
 @Serializable
-data class StatusMessage(val testInfo: TestInfo) : Message()
+data class StatusMessage(val id: Int, val testInfo: TestInfo) : Message()
 
 @Serializable
 data class CommentMessage(val comment: Comment) : Message()

@@ -18,6 +18,8 @@ import by.funduk.api.SubmissionApi
 import by.funduk.model.*
 import by.funduk.ui.general.*
 import by.funduk.ui.system.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.w3c.dom.events.Event
@@ -29,9 +31,7 @@ import kotlin.math.min
 
 var taskId = 0
 
-var main_scope = MainScope()
-
-var previousSubmission = ""
+var mainScope = MainScope()
 
 external interface TextFieldWithNameProps : Props {
     var name: String
@@ -126,16 +126,30 @@ val sampleField = FC<SampleFieldProps> { props ->
 val langItemList = GetItemList<Language>()
 
 private val TaskPage = FC<Props> { props ->
-    val refLang = useRef<HTMLDivElement>(null)
-    val list = useRef<HTMLDivElement>(null)
-    val fileInput = useRef<HTMLInputElement>(null)
-    val editor = useRef<HTMLTextAreaElement>(null)
+    val refLanguageListMenu = useRef<HTMLDivElement>(null)
+    val refLanguageList = useRef<HTMLDivElement>(null)
+    val refFileInput = useRef<HTMLInputElement>(null)
+    val refEditor = useRef<HTMLTextAreaElement>(null)
 
-    var canSubmit by useState(true)
-    var language by useState(Language.entries[0])
-    var fileButtonName by useState<String?>(null)
     var submissionViewList by useState<List<SubmissionView>>(listOf())
-    var isShortened by useState(true)
+
+    inline fun handleSubmit(view: SubmissionView) {
+        submissionViewList = listOf(view).plus(
+            submissionViewList
+        )
+    }
+
+    fun handleStatusMessage(message: StatusMessage) {
+        println(submissionViewList.size)
+        val list = submissionViewList.toMutableList()
+        val info = message.testInfo
+        val id = message.id
+        val ind = list.indexOfFirst{ view -> view.id == id}
+        if (ind != -1) {
+            list[ind] = list[ind].copy(testInfo = info)
+            submissionViewList = list
+        }
+    }
 
     div {
         css {
@@ -161,172 +175,263 @@ private val TaskPage = FC<Props> { props ->
 
             // preparations
             useEffectOnce {
-
-                main_scope.launch {
+                mainScope.launch(Dispatchers.Main) {
                     val loaded_task = TasksApi.getTask(taskId)
 
                     if (loaded_task == null) {
                         textOnNull = "We do not recognize this task"
                     } else {
-                        SubmissionApi.initWebSocket(taskId) {
-                            println("got message: $it")
-                        }
+                        submissionViewList = SubmissionApi.getSubmissionViews(taskId, 1)
                     }
                     document.title = loaded_task?.name ?: "unknown task"
                     task = loaded_task
-
-                    submissionViewList = SubmissionApi.getSubmissionViews(taskId, 1, Counts.UI.SubmissionTable.DefaultNumberOfSubmissions)
                 }
             }
 
-            if (task == null) {
-                div {
-                    css {
-                        display = Display.flex
-                        height = Sizes.TaskViewHeight
-                        width = Sizes.TaskViewWidth
-                        justifyContent = JustifyContent.center
+            useEffectOnce {
+                mainScope.launch(Dispatchers.Main) {
+                    SubmissionApi.connectToTaskWebSocket(taskId) {
+                        if (it is StatusMessage) {
+                            val list = submissionViewList.toMutableList()
+                            println(list.size)
+                            val info = it.testInfo
+                            val id = it.id
+                            val ind = list.indexOfFirst{ view -> view.id == id}
+                            if (ind != -1) {
+                                list[ind] = list[ind].copy(testInfo = info)
+                                submissionViewList = list
+                            }
+                        }
                     }
+                }
+            }
 
+            div {
+                css {
+                    display = Display.flex
+                    justifyContent = JustifyContent.center
+                }
+
+                if (task == null) {
                     textFrame {
                         size = Sizes.Font.Big
                         color = Pallete.Web.SecondPlan
                         text = textOnNull
                     }
-
                 }
-            } else {
+            }
+
+            div {
+                css {
+                    if (task != null) {
+                        display = Display.flex
+                    } else {
+                        visibility = Visibility.hidden
+                        maxHeight = 0.px
+                        height = 0.px
+                    }
+                    flexDirection = FlexDirection.row
+                    gap = Sizes.RegularGap
+                }
+                // task
                 div {
                     css {
                         display = Display.flex
-                        flexDirection = FlexDirection.row
+                        flexDirection = FlexDirection.column
                         gap = Sizes.RegularGap
+
+                        alignItems = AlignItems.center
                     }
-                    // task
+
+                    // title
+                    div {
+                        key = "title"
+                        css {
+                            display = Display.flex
+                            flexDirection = FlexDirection.column
+                            borderRadius = Sizes.BoxBorderRadius
+                            backgroundColor = colorOfRank[task?.rank] ?: NamedColor.transparent
+                            alignItems = AlignItems.center
+                            padding = Sizes.RegularMargin
+                            boxShadow = Common.Shadow
+                        }
+
+                        val text_color = if (task?.rank == null) Pallete.Web.DarkText else Pallete.Web.LightText
+                        textFrame {
+                            color = text_color
+                            text = task?.name ?: "Unnamed"
+                            size = Sizes.Font.Big
+                            margins = listOf(0.px, 0.px, 0.px, 0.px)
+                        }
+                        textFrame {
+                            color = text_color
+                            text = (task?.id.toString() ?: "not indexed")
+                            size = Sizes.Font.Small
+                            margins = listOf(0.px, Sizes.SmallMargin, 0.px, 0.px)
+                        }
+
+                        div {
+                            css {
+                                display = Display.flex
+                                flexDirection = FlexDirection.row
+                                alignContent = AlignContent.center
+                                gap = Sizes.SmallGap
+                            }
+
+                            // left
+                            div {
+                                css {
+                                    display = Display.flex
+                                    flexDirection = FlexDirection.column
+                                    alignItems = AlignItems.end
+                                    width = Sizes.RegularLimitsWidth
+                                }
+
+                                textFrame {
+                                    color = text_color
+                                    text = "time:"
+                                    size = Sizes.Font.Small
+                                    margins = listOf(0.px, 0.px, 0.px, 0.px)
+                                }
+
+                                textFrame {
+                                    color = text_color
+                                    text = "memory:"
+                                    size = Sizes.Font.Small
+                                    margins = listOf(0.px, 0.px, 0.px, 0.px)
+                                }
+                            }
+
+                            // right
+                            div {
+                                css {
+                                    display = Display.flex
+                                    flexDirection = FlexDirection.column
+                                    alignItems = AlignItems.start
+                                    width = Sizes.RegularLimitsWidth
+                                }
+
+                                textFrame {
+                                    color = text_color
+                                    text = "${2}s"
+                                    size = Sizes.Font.Small
+                                    margins = listOf(0.px, 0.px, 0.px, 0.px)
+                                }
+
+                                textFrame {
+                                    color = text_color
+                                    text = "${256}mb"
+                                    size = Sizes.Font.Small
+                                    margins = listOf(0.px, 0.px, 0.px, 0.px)
+                                }
+                            }
+                        }
+                    }
+
+                    //content
                     div {
                         css {
                             display = Display.flex
                             flexDirection = FlexDirection.column
                             gap = Sizes.RegularGap
-
-                            alignItems = AlignItems.center
+                            background = Pallete.Web.LightShadow
+                            borderRadius = Sizes.BoxBorderRadius
+                            boxShadow = Common.Shadow
                         }
 
-                        // title
+                        textFieldWithName {
+                            name = "statement"
+                            text = task?.statement ?: "No statement."
+                        }
+
+                        textFieldWithName {
+                            name = "input"
+                            text = "You are given an only integer x."
+                        }
+
+                        textFieldWithName {
+                            name = "output"
+                            text = "Print x ^ 3 in one string."
+                        }
+
+                        //samples
                         div {
+                            key = "samples"
                             css {
                                 display = Display.flex
                                 flexDirection = FlexDirection.column
                                 borderRadius = Sizes.BoxBorderRadius
-                                backgroundColor = colorOfRank[task?.rank] ?: NamedColor.transparent
-                                alignItems = AlignItems.center
-                                padding = Sizes.RegularMargin
-                                boxShadow = Common.Shadow
+                                backgroundColor = Pallete.Web.Light
+                                alignItems = AlignItems.start
+                                width = Sizes.TaskStatement.Width
                             }
 
-                            val text_color = if (task?.rank == null) Pallete.Web.DarkText else Pallete.Web.LightText
+                            // box name
                             textFrame {
-                                color = text_color
-                                text = task?.name ?: "Unnamed"
-                                size = Sizes.Font.Big
-                                margins = listOf(0.px, 0.px, 0.px, 0.px)
-                            }
-                            textFrame {
-                                color = text_color
-                                text = (task?.id.toString() ?: "not indexed")
-                                size = Sizes.Font.Small
-                                margins = listOf(0.px, Sizes.SmallMargin, 0.px, 0.px)
+                                text = "samples"
+                                bold = true
                             }
 
                             div {
                                 css {
                                     display = Display.flex
-                                    flexDirection = FlexDirection.row
-                                    alignContent = AlignContent.center
-                                    gap = Sizes.SmallGap
+                                    flexDirection = FlexDirection.column
+                                    margin = Sizes.RegularMargin
+                                    gap = Sizes.RegularGap
+                                    width = 100.pct - Sizes.RegularGap
                                 }
 
-                                // left
+                                //sample row
                                 div {
                                     css {
                                         display = Display.flex
-                                        flexDirection = FlexDirection.column
-                                        alignItems = AlignItems.end
-                                        width = Sizes.RegularLimitsWidth
+                                        flexDirection = FlexDirection.row
+                                        width = 100.pct
+                                        gap = Sizes.RegularGap
                                     }
 
-                                    textFrame {
-                                        color = text_color
-                                        text = "time:"
-                                        size = Sizes.Font.Small
-                                        margins = listOf(0.px, 0.px, 0.px, 0.px)
+                                    // input
+                                    sampleField {
+                                        name = "input"
+                                        text = "3"
                                     }
 
-                                    textFrame {
-                                        color = text_color
-                                        text = "memory:"
-                                        size = Sizes.Font.Small
-                                        margins = listOf(0.px, 0.px, 0.px, 0.px)
+                                    // output
+                                    sampleField {
+                                        name = "output"
+                                        text = "27"
                                     }
                                 }
 
-                                // right
-                                div {
-                                    css {
-                                        display = Display.flex
-                                        flexDirection = FlexDirection.column
-                                        alignItems = AlignItems.start
-                                        width = Sizes.RegularLimitsWidth
-                                    }
-
-                                    textFrame {
-                                        color = text_color
-                                        text = "${2}s"
-                                        size = Sizes.Font.Small
-                                        margins = listOf(0.px, 0.px, 0.px, 0.px)
-                                    }
-
-                                    textFrame {
-                                        color = text_color
-                                        text = "${256}mb"
-                                        size = Sizes.Font.Small
-                                        margins = listOf(0.px, 0.px, 0.px, 0.px)
-                                    }
-                                }
                             }
                         }
 
-                        //content
+                        textFieldWithName {
+                            name = "note"
+                            text = "Optional field with notes and clues."
+                        }
+
+                        //submit + submissions
                         div {
                             css {
                                 display = Display.flex
-                                flexDirection = FlexDirection.column
-                                gap = Sizes.RegularGap
-                                background = Pallete.Web.LightShadow
-                                borderRadius = Sizes.BoxBorderRadius
-                                boxShadow = Common.Shadow
+                                flexDirection = FlexDirection.columnReverse
+                                gap = Sizes.BigMargin
                             }
 
-                            textFieldWithName {
-                                name = "statement"
-                                text = task?.statement ?: "No statement."
-                            }
-
-                            textFieldWithName {
-                                name = "input"
-                                text = "You are given an only integer x."
-                            }
-
-                            textFieldWithName {
-                                name = "output"
-                                text = "Print x ^ 3 in one string."
-                            }
-
-                            //samples
-
+                            //submission section
                             div {
+                                var isShortened by useState(true)
+
                                 css {
-                                    display = Display.flex
+                                    if (submissionViewList.isNotEmpty()) {
+                                        display = Display.flex
+                                    } else {
+                                        visibility = Visibility.hidden
+                                        maxHeight = 0.px
+                                        height = 0.px
+                                    }
+                                    position = Position.relative
                                     flexDirection = FlexDirection.column
                                     borderRadius = Sizes.BoxBorderRadius
                                     backgroundColor = Pallete.Web.Light
@@ -336,51 +441,60 @@ private val TaskPage = FC<Props> { props ->
 
                                 // box name
                                 textFrame {
-                                    text = "samples"
+                                    text = "submissions"
                                     bold = true
                                 }
 
+                                //submit content
                                 div {
                                     css {
                                         display = Display.flex
                                         flexDirection = FlexDirection.column
-                                        margin = Sizes.RegularMargin
-                                        gap = Sizes.RegularGap
-                                        width = 100.pct - Sizes.RegularGap
+                                        padding = Sizes.RegularMargin
+                                        paddingTop = 0.px
+                                        width = 100.pct
                                     }
 
-                                    //sample row
-                                    div {
-                                        css {
-                                            display = Display.flex
-                                            flexDirection = FlexDirection.row
-                                            width = 100.pct
-                                            gap = Sizes.RegularGap
-                                        }
-
-                                        // input
-                                        sampleField {
-                                            name = "input"
-                                            text = "3"
-                                        }
-
-                                        // output
-                                        sampleField {
-                                            name = "output"
-                                            text = "27"
-                                        }
+                                    submissionTable {
+                                        width = 100.pct - 2 * Sizes.RegularMargin
+                                        submissions = if (isShortened) submissionViewList.let {
+                                            it.subList(
+                                                0, min(it.size, Counts.UI.SubmissionTable.DefaultNumberOfSubmissions)
+                                            )
+                                        } else submissionViewList
                                     }
 
+                                    // all submissions button
+                                    if (submissionViewList.size > Counts.UI.SubmissionTable.DefaultNumberOfSubmissions) {
+                                        div {
+                                            css {
+                                                display = Display.flex
+                                                justifyContent = JustifyContent.center
+                                            }
+                                            div {
+                                                css {
+                                                    display = Display.inlineBlock
+                                                    cursor = Cursor.pointer
+                                                }
+                                                textFrame {
+                                                    text = if (isShortened) "all submissions" else "shorten"
+                                                    size = Sizes.Font.Small
+                                                    color = Pallete.Web.SecondPlan
+                                                }
+                                            }
+
+                                            onClick = {
+                                                println(submissionViewList)
+                                                isShortened = !isShortened
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
-                            textFieldWithName {
-                                name = "note"
-                                text = "Optional field with notes and clues."
-                            }
-
-                            //submission section
+                            // submit
                             div {
+                                id = "submit"
                                 css {
                                     display = Display.flex
                                     position = Position.relative
@@ -399,6 +513,9 @@ private val TaskPage = FC<Props> { props ->
 
                                 //submit content
                                 div {
+                                    var canSubmit by useState(true)
+                                    var fileButtonName by useState<String?>(null)
+                                    var language by useState(Language.entries[0])
                                     css {
                                         display = Display.flex
                                         flexDirection = FlexDirection.column
@@ -436,8 +553,8 @@ private val TaskPage = FC<Props> { props ->
                                             }
 
                                             onClick = { e ->
-                                                refLang.current?.style?.visibility = "visible"
-                                                refLang.current?.focus()
+                                                refLanguageListMenu.current?.style?.visibility = "visible"
+                                                refLanguageListMenu.current?.focus()
                                                 e.stopPropagation()
                                             }
 
@@ -470,7 +587,7 @@ private val TaskPage = FC<Props> { props ->
                                                     visibility = Visibility.hidden
                                                 }
 
-                                                ref = fileInput
+                                                ref = refFileInput
                                                 accept = language.extensions.map { ".$it" }.joinToString(" ")
                                                 type = InputType.file
                                                 multiple = false
@@ -493,7 +610,7 @@ private val TaskPage = FC<Props> { props ->
                                             }
 
                                             onClick = {
-                                                fileInput.current?.click()
+                                                refFileInput.current?.click()
                                             }
 
                                             textFrame {
@@ -516,7 +633,7 @@ private val TaskPage = FC<Props> { props ->
                                         }
 
                                         textarea {
-                                            ref = editor
+                                            ref = refEditor
                                             className = ClassName("editor")
                                             autoCapitalize = "off"
                                             autoCorrect = "off"
@@ -566,18 +683,15 @@ private val TaskPage = FC<Props> { props ->
                                                 if (canSubmit) {
                                                     canSubmit = false
                                                     val submission = RawSubmission(
-                                                        taskId,
-                                                        1,
-                                                        editor.current?.value ?: "",
-                                                        language
+                                                        taskId, 1, refEditor.current?.value ?: "", language
                                                     )
-                                                    main_scope.launch {
+                                                    mainScope.launch {
                                                         val id = SubmissionApi.submit(submission)
                                                         if (id == null) {
-                                                           // invalid submission
+                                                            // invalid submission
                                                         } else {
-                                                            submissionViewList = listOf(SubmissionApi.getSubmissionView(id)).plus(submissionViewList)
-                                                                .subList(0, if (isShortened) min(submissionViewList.size, Counts.UI.SubmissionTable.DefaultNumberOfSubmissions) else submissionViewList.size)
+                                                            val view = SubmissionApi.getSubmissionView(id)
+                                                            handleSubmit(view)
                                                         }
                                                         canSubmit = true
                                                     }
@@ -590,172 +704,98 @@ private val TaskPage = FC<Props> { props ->
                                             }
                                         }
                                     }
-                                }
 
-                                // lang list context menu
-                                div {
-                                    css {
-                                        position = Position.absolute
-                                        top = 4 * Sizes.RegularMargin + Sizes.Button.Height + Sizes.Font.Regular
-                                        left = Sizes.RegularMargin
-                                        visibility = Visibility.hidden
-                                        outline = 0.px
-                                    }
-
-                                    tabIndex = 0
-
-                                    ref = refLang
-
-                                    langItemList {
-                                        ref = list
-                                        items = enumValues<Language>().toList().map { Pair(it.text, it) }
-                                        onClickCallback = { item ->
-                                            language = item
-                                            refLang.current?.style?.visibility = "hidden"
-                                        }
-                                    }
-
-                                    onFocus = { e ->
-                                        list.current?.focus()
-                                        e.stopPropagation()
-                                    }
-
-                                    onClick = { e ->
-                                        e.stopPropagation()
-                                    }
-                                }
-                            }
-
-
-                            //submission section
-                            if (submissionViewList.isNotEmpty()) {
-                                div {
-                                    css {
-                                        display = Display.flex
-                                        position = Position.relative
-                                        flexDirection = FlexDirection.column
-                                        borderRadius = Sizes.BoxBorderRadius
-                                        backgroundColor = Pallete.Web.Light
-                                        alignItems = AlignItems.start
-                                        width = Sizes.TaskStatement.Width
-                                    }
-
-                                    // box name
-                                    textFrame {
-                                        text = "submissions"
-                                        bold = true
-                                    }
-
-                                    //submit content
+                                    // lang list context menu
                                     div {
                                         css {
-                                            display = Display.flex
-                                            flexDirection = FlexDirection.column
-                                            padding = Sizes.RegularMargin
-                                            paddingTop = 0.px
-                                            width = 100.pct
+                                            position = Position.absolute
+                                            top = 4 * Sizes.RegularMargin + Sizes.Button.Height + Sizes.Font.Regular
+                                            left = Sizes.RegularMargin
+                                            visibility = Visibility.hidden
+                                            outline = 0.px
                                         }
 
-                                        submissionTable {
-                                            width = 100.pct - 2 * Sizes.RegularMargin
-                                            submissions = submissionViewList
+                                        tabIndex = 0
+
+                                        ref = refLanguageListMenu
+
+                                        langItemList {
+                                            ref = refLanguageList
+                                            items = enumValues<Language>().toList().map { Pair(it.text, it) }
+                                            onClickCallback = { item ->
+                                                language = item
+                                                refLanguageListMenu.current?.style?.visibility = "hidden"
+                                            }
                                         }
 
-                                        // all submissions button
-                                        div {
-                                            css {
-                                                display = Display.flex
-                                                justifyContent = JustifyContent.center
-                                            }
-                                            div {
-                                                css {
-                                                    display = Display.inlineBlock
-                                                    cursor = Cursor.pointer
-                                                }
-                                                textFrame {
-                                                    text = if (isShortened) "all submissions" else "shorten"
-                                                    size = Sizes.Font.Small
-                                                    color = Pallete.Web.SecondPlan
-                                                }
-                                            }
+                                        onFocus = { e ->
+                                            refLanguageList.current?.focus()
+                                            e.stopPropagation()
+                                        }
 
-                                            onClick = {
-                                                val was = isShortened
-                                                isShortened = !isShortened
-                                                if (was) {
-                                                    main_scope.launch {
-                                                        submissionViewList =
-                                                            SubmissionApi.getSubmissionViews(taskId, 1)
-                                                    }
-                                                } else {
-                                                    main_scope.launch {
-                                                        submissionViewList =
-                                                            SubmissionApi.getSubmissionViews(taskId, 1, Counts.UI.SubmissionTable.DefaultNumberOfSubmissions)
-                                                    }
-                                                }
-                                            }
+                                        onClick = { e ->
+                                            e.stopPropagation()
                                         }
                                     }
-
                                 }
                             }
 
                         }
+
                     }
-                    // info board
+                }
+                // info board
+                div {
+
+                    css {
+                        display = Display.flex
+                        flexDirection = FlexDirection.column
+                        justifyContent = JustifyContent.start
+                    }
+
                     div {
-
                         css {
-                            display = Display.flex
                             flexDirection = FlexDirection.column
-                            justifyContent = JustifyContent.start
+                            width = Sizes.TaskStatement.InfoWidth
+                            alignItems = AlignItems.start
+                            borderRadius = Sizes.BoxBorderRadius
+                            backgroundColor = Pallete.Web.Light
+                            boxShadow = Common.Shadow
                         }
 
-                        div {
-                            css {
-                                flexDirection = FlexDirection.column
-                                width = Sizes.TaskStatement.InfoWidth
-                                alignItems = AlignItems.start
-                                borderRadius = Sizes.BoxBorderRadius
-                                backgroundColor = Pallete.Web.Light
-                                boxShadow = Common.Shadow
-                            }
-
-                            textFrame {
-                                text = "tags"
-                                bold = true
-                            }
-
-                            staticTagBoard {
-                                tags = (task?.tags ?: listOf())
-                                direction = FlexDirection.row
-                                align = AlignItems.start
-                            }
-
+                        textFrame {
+                            text = "tags"
+                            bold = true
                         }
+
+                        staticTagBoard {
+                            tags = (task?.tags ?: listOf())
+                            direction = FlexDirection.row
+                            align = AlignItems.start
+                        }
+
                     }
                 }
             }
-
-
         }
 
-        bottom {
 
-        }
+    }
 
-        nav {
-        }
+    bottom {
 
-        val hideContext: (Event?) -> Unit = {
-            refLang.current?.style?.visibility = "hidden"
-        }
+    }
 
-        useEffectWithCleanup {
-            window.addEventListener("click", hideContext) // Добавляем обработчик клика
-            onCleanup {
-                window.removeEventListener("click", hideContext)
-            }
+    nav {}
+
+    val hideContext: (Event?) -> Unit = {
+        refLanguageListMenu.current?.style?.visibility = "hidden"
+    }
+
+    useEffectWithCleanup {
+        window.addEventListener("click", hideContext) // Добавляем обработчик клика
+        onCleanup {
+            window.removeEventListener("click", hideContext)
         }
     }
 }

@@ -16,6 +16,7 @@ object TestService {
 
     fun test(submission: Submission) = testingScope.launch {
         beginTesting(submission)
+        delay(1.seconds)
         updateTestInfo(submission, TestInfo(Status.Running, 1, 0, 0))
         delay(1.seconds)
         updateTestInfo(submission, TestInfo(Status.Running, 1, 0, 0))
@@ -44,7 +45,7 @@ object TestService {
         val id = submission.id!!
         testInfos[id] = testInfo
         SubmitService.updateTestInfo(id, testInfo)
-        NotificationService.notify(submission.taskId, submission.userId, StatusMessage(testInfo))
+        NotificationService.notify(submission.taskId, submission.userId, StatusMessage(id, testInfo))
     }
 
     fun getCurrentTest(submissionId: Int): Int = testInfos[submissionId]?.test ?: 0

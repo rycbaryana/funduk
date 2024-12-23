@@ -31,7 +31,7 @@ object NotificationService {
     }
 
     suspend fun notify(taskId: Int, userId: Int, message: Message) {
-        val client = subscribers[taskId]?.first {
+        val client = subscribers[taskId]?.firstOrNull {
             it.userId == userId
         }
         client?.session?.sendSerialized(message)

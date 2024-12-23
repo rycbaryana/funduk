@@ -26,8 +26,8 @@ object SubmissionApi {
             }
         }.body()
 
-    suspend fun initWebSocket(id: Int, onReceive: (Message) -> Unit) =
-        client.webSocket("$kServerAddress/notifications/$id") {
+    suspend fun connectToTaskWebSocket(id: Int, onReceive: (Message) -> Unit) =
+        client.webSocket("$kServerWebSocketAddress/notifications/$id") {
             for (message in incoming) {
                 when (message) {
                     is Frame.Text -> {
@@ -38,6 +38,8 @@ object SubmissionApi {
                 }
             }
         }
+
+    fun disconnectFromTaskWebSocket(id: Int, onReceive: (Message) -> Unit) = client.close()
 
     suspend fun getSubmissionView(id: Int): SubmissionView =
         client.get(kApiAddress) {
