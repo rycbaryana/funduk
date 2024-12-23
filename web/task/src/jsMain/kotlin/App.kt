@@ -18,16 +18,14 @@ import by.funduk.api.SubmissionApi
 import by.funduk.model.*
 import by.funduk.ui.general.*
 import by.funduk.ui.system.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.w3c.dom.events.Event
 import web.html.HTMLTextAreaElement
 import web.html.HTMLDivElement
 import web.html.HTMLInputElement
 import web.html.InputType
 import kotlin.math.min
+import kotlin.time.Duration.Companion.seconds
 
 var taskId = 0
 
@@ -131,23 +129,23 @@ private val TaskPage = FC<Props> { props ->
     val refFileInput = useRef<HTMLInputElement>(null)
     val refEditor = useRef<HTMLTextAreaElement>(null)
 
-    var submissionViewList by useState<List<SubmissionView>>(listOf())
+    var (submissionViews, setSubmissionViews) = useState<List<SubmissionView>>(mutableListOf())
 
     inline fun handleSubmit(view: SubmissionView) {
-        submissionViewList = listOf(view).plus(
-            submissionViewList
-        )
+        setSubmissionViews {
+            listOf(view).plus(it)
+        }
     }
 
     fun handleStatusMessage(message: StatusMessage) {
-        println(submissionViewList.size)
-        val list = submissionViewList.toMutableList()
-        val info = message.testInfo
-        val id = message.id
-        val ind = list.indexOfFirst{ view -> view.id == id}
-        if (ind != -1) {
-            list[ind] = list[ind].copy(testInfo = info)
-            submissionViewList = list
+        setSubmissionViews { list ->
+            list.map {
+                if (it.id == message.id) {
+                    it.copy(testInfo = message.testInfo)
+                } else {
+                    it
+                }
+            }
         }
     }
 
@@ -181,26 +179,18 @@ private val TaskPage = FC<Props> { props ->
                     if (loaded_task == null) {
                         textOnNull = "We do not recognize this task"
                     } else {
-                        submissionViewList = SubmissionApi.getSubmissionViews(taskId, 1)
+                        setSubmissionViews(SubmissionApi.getSubmissionViews(taskId, 1))
                     }
                     document.title = loaded_task?.name ?: "unknown task"
                     task = loaded_task
+
                 }
             }
-
             useEffectOnce {
                 mainScope.launch(Dispatchers.Main) {
                     SubmissionApi.connectToTaskWebSocket(taskId) {
                         if (it is StatusMessage) {
-                            val list = submissionViewList.toMutableList()
-                            println(list.size)
-                            val info = it.testInfo
-                            val id = it.id
-                            val ind = list.indexOfFirst{ view -> view.id == id}
-                            if (ind != -1) {
-                                list[ind] = list[ind].copy(testInfo = info)
-                                submissionViewList = list
-                            }
+                            handleStatusMessage(it)
                         }
                     }
                 }
@@ -424,7 +414,7 @@ private val TaskPage = FC<Props> { props ->
                                 var isShortened by useState(true)
 
                                 css {
-                                    if (submissionViewList.isNotEmpty()) {
+                                    if (submissionViews.isNotEmpty()) {
                                         display = Display.flex
                                     } else {
                                         visibility = Visibility.hidden
@@ -457,15 +447,15 @@ private val TaskPage = FC<Props> { props ->
 
                                     submissionTable {
                                         width = 100.pct - 2 * Sizes.RegularMargin
-                                        submissions = if (isShortened) submissionViewList.let {
+                                        submissions = if (isShortened) submissionViews.let {
                                             it.subList(
                                                 0, min(it.size, Counts.UI.SubmissionTable.DefaultNumberOfSubmissions)
                                             )
-                                        } else submissionViewList
+                                        } else submissionViews
                                     }
 
                                     // all submissions button
-                                    if (submissionViewList.size > Counts.UI.SubmissionTable.DefaultNumberOfSubmissions) {
+                                    if (submissionViews.size > Counts.UI.SubmissionTable.DefaultNumberOfSubmissions) {
                                         div {
                                             css {
                                                 display = Display.flex
@@ -484,7 +474,7 @@ private val TaskPage = FC<Props> { props ->
                                             }
 
                                             onClick = {
-                                                println(submissionViewList)
+                                                println(submissionViews)
                                                 isShortened = !isShortened
                                             }
                                         }
