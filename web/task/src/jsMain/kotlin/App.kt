@@ -129,7 +129,7 @@ private val TaskPage = FC<Props> { props ->
     val refFileInput = useRef<HTMLInputElement>(null)
     val refEditor = useRef<HTMLTextAreaElement>(null)
 
-    var (submissionViews, setSubmissionViews) = useState<List<SubmissionView>>(mutableListOf())
+    val (submissionViews, setSubmissionViews) = useState<List<SubmissionView>>(mutableListOf())
 
     inline fun handleSubmit(view: SubmissionView) {
         setSubmissionViews {
@@ -474,7 +474,6 @@ private val TaskPage = FC<Props> { props ->
                                             }
 
                                             onClick = {
-                                                println(submissionViews)
                                                 isShortened = !isShortened
                                             }
                                         }
