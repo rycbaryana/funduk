@@ -43,3 +43,7 @@ include(":web")
 include(":web:common")
 include(":web:archive")
 include("web:task")
+include("web:login")
+findProject(":web:login")?.name = "login"
+include("web:user")
+findProject(":web:user")?.name = "user"

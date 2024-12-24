@@ -79,6 +79,19 @@ sealed interface Sizes {
         }
     }
 
+    sealed interface Avatar {
+        companion object {
+            val Width = 120.pt
+            val Height = 120.pt
+        }
+    }
+
+    sealed interface Login {
+        companion object {
+            val Width = 300.pt
+        }
+    }
+
     sealed interface SubmissionView {
         companion object {
             val Height = 25.px

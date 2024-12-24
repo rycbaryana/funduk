@@ -50,6 +50,7 @@ fun <Item> GetItemList():
 
             inputField {
                 ref = refSearch
+                placeholder = "Search..."
                 onChangeCallback = { str ->
                     current_items = searcher.Search(str.lowercase())
                 }

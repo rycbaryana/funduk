@@ -131,7 +131,7 @@ private val TaskPage = FC<Props> { props ->
 
     val (submissionViews, setSubmissionViews) = useState<List<SubmissionView>>(mutableListOf())
 
-    inline fun handleSubmit(view: SubmissionView) {
+    fun handleSubmit(view: SubmissionView) {
         setSubmissionViews {
             listOf(view).plus(it)
         }
@@ -255,7 +255,7 @@ private val TaskPage = FC<Props> { props ->
                         }
                         textFrame {
                             color = text_color
-                            text = (task?.id.toString() ?: "not indexed")
+                            text = task?.id.toString()
                             size = Sizes.Font.Small
                             margins = listOf(0.px, Sizes.SmallMargin, 0.px, 0.px)
                         }
@@ -525,66 +525,31 @@ private val TaskPage = FC<Props> { props ->
                                         }
 
                                         //select lang
-                                        div {
-                                            css {
-                                                display = Display.flex
-                                                justifyContent = JustifyContent.center
-                                                alignItems = AlignItems.center
-
-                                                borderRadius = Sizes.Button.Height / 2
-                                                height = Sizes.Button.Height
-
-                                                background = Pallete.Web.Light
-                                                border = Sizes.Button.Border
-                                                borderStyle = LineStyle.solid
-                                                borderColor = Pallete.Web.Button.Border
-                                                cursor = Cursor.pointer
-                                            }
-
+                                        commonButton {
+                                            text = language.text
                                             onClick = { e ->
                                                 refLanguageListMenu.current?.style?.visibility = "visible"
                                                 refLanguageListMenu.current?.focus()
                                                 e.stopPropagation()
                                             }
-
-                                            textFrame {
-                                                text = language.text
-                                                margins = listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin)
-                                            }
                                         }
 
                                         // load file
-                                        div {
+                                        input {
                                             css {
-                                                display = Display.flex
-                                                justifyContent = JustifyContent.center
-                                                alignItems = AlignItems.center
-
-                                                borderRadius = Sizes.Button.Height / 2
-                                                height = Sizes.Button.Height
-
-                                                background = Pallete.Web.Light
-                                                border = Sizes.Button.Border
-                                                borderStyle = LineStyle.solid
-                                                borderColor = Pallete.Web.Button.Border
-                                                cursor = Cursor.pointer
+                                                position = Position.fixed
+                                                visibility = Visibility.hidden
                                             }
 
-                                            input {
-                                                css {
-                                                    position = Position.fixed
-                                                    visibility = Visibility.hidden
-                                                }
+                                            ref = refFileInput
+                                            accept = language.extensions.map { ".$it" }.joinToString(" ")
+                                            type = InputType.file
+                                            multiple = false
 
-                                                ref = refFileInput
-                                                accept = language.extensions.map { ".$it" }.joinToString(" ")
-                                                type = InputType.file
-                                                multiple = false
+                                            onChange = { e ->
+                                                val file = e.target.files?.get(0)
 
-                                                onChange = { e ->
-                                                    val file = e.target.files?.get(0)
-
-                                                    if (file != null) {
+                                                if (file != null) {
 //                                                        val reader = FileReader()
 //                                                        reader.onload = { e ->
 //                                                            val data = (reader.result as String?)
@@ -592,19 +557,16 @@ private val TaskPage = FC<Props> { props ->
 //                                                        reader.readAsArrayBuffer(file)
 
 
-                                                    }
-
-                                                    fileButtonName = file?.name ?: "load file"
                                                 }
-                                            }
 
+                                                fileButtonName = file?.name ?: "load file"
+                                            }
+                                        }
+
+                                        commonButton {
+                                            text = fileButtonName ?: "load file"
                                             onClick = {
                                                 refFileInput.current?.click()
-                                            }
-
-                                            textFrame {
-                                                text = fileButtonName ?: "load file"
-                                                margins = listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin)
                                             }
                                         }
                                     }

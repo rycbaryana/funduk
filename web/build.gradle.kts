@@ -31,6 +31,8 @@ dependencies {
     implementation(libs.ktor.serialization.json)
     browserDist(project(":web:archive", "browserDist"))
     browserDist(project(":web:task", "browserDist"))
+    browserDist(project(":web:login", "browserDist"))
+    browserDist(project(":web:user", "browserDist"))
 }
 
 tasks.withType<Copy>().named("processResources") {

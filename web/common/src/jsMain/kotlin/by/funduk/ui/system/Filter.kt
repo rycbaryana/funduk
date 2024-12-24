@@ -26,6 +26,7 @@ val filterField = FC<FilterFieldProps> { props ->
 
         // search
         inputField {
+            placeholder = "Search..."
         }
 
         // rate

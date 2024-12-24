@@ -30,5 +30,7 @@ fun Application.module() {
 
         staticResources("/archive", "static/archive")
         staticResources("/task/{index}", "static/task")
+        staticResources("/authenticate", "static/login")
+        staticResources("/user/{name}", "static/user")
     }
 }

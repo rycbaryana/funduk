@@ -4,6 +4,7 @@ import react.*
 import react.dom.html.ReactHTML.span
 import react.dom.html.ReactHTML.input
 import emotion.react.*
+import org.w3c.dom.events.Event
 import web.cssom.*
 import web.html.HTMLInputElement
 
@@ -108,6 +109,7 @@ val tagFrame = FC<TagFrameProps> { props ->
 external interface InputFieldProps : PropsWithRef<HTMLInputElement> {
     var onChangeCallback: ((String) -> Unit)?
     var onEnterCallback: (() -> Unit)?
+    var placeholder: String?
 }
 
 val inputField = ForwardRef<InputFieldProps> { props ->
@@ -136,6 +138,6 @@ val inputField = ForwardRef<InputFieldProps> { props ->
                 props.onEnterCallback?.invoke()
             }
         }
-        placeholder = "Search..."
+        placeholder = props.placeholder
     }
 }
