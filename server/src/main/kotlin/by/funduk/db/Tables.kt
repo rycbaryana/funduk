@@ -45,3 +45,8 @@ object Comments : IntIdTable("comments") {
     val likes = integer("likes").default(0)
     val dislikes = integer("dislikes").default(0)
 }
+
+object RefreshTokens: IntIdTable("refresh_tokens") {
+    val userId = RefreshTokens.reference("user_id", Users)
+    val token = text("token")
+}

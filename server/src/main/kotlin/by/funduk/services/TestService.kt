@@ -34,7 +34,7 @@ object TestService {
     }
 
     private fun beginTesting(submission: Submission) {
-        testInfos.put(submission.id!!, submission.testInfo)
+        testInfos[submission.id!!] = submission.testInfo
     }
 
     private fun endTesting(submission: Submission) {

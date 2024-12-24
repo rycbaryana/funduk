@@ -1,20 +1,18 @@
 package by.funduk.routes
 
-import by.funduk.AuthConfig
+import by.funduk.api.AccessTokenResponse
+import by.funduk.api.AuthRequest
+import by.funduk.services.AuthService
 import by.funduk.services.UserService
 import by.funduk.utils.checkPassword
 import by.funduk.utils.hashPassword
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.serialization.Serializable
 
-@Serializable
-data class AuthRequest(val username: String, val password: String)
+const val REFRESH_TOKEN_COOKIE = "refresh_token"
 
 fun Route.authRoutes() {
     route("/auth") {
@@ -33,20 +31,25 @@ fun Route.authRoutes() {
             }
         }
         post("/login") {
-
             val request: AuthRequest = call.receive()
             val user = UserService.findByUsername(request.username)
             if (user != null && checkPassword(request.password, user.password)) {
-                val token = JWT.create().withSubject(user.id.toString()).withClaim("username", user.username)
-                    .withIssuer(AuthConfig.issuer)
-                    .withAudience(AuthConfig.audience).sign(
-                        Algorithm.HMAC256(AuthConfig.secret)
-                    )
-                call.respond(mapOf("token" to token))
+                val access = AuthService.createAccessToken(user.id!!)
+                val refresh = AuthService.createRefreshToken(user.id!!)
+                call.response.cookies.append(REFRESH_TOKEN_COOKIE, refresh, httpOnly = true)
+                call.respond(HttpStatusCode.OK, AccessTokenResponse(access))
             } else {
                 call.respond(HttpStatusCode.Unauthorized, "Invalid credentials")
             }
         }
-
+        post("/refresh") {
+            val refreshToken = call.request.cookies[REFRESH_TOKEN_COOKIE]
+            val tokens = refreshToken?.let { AuthService.refreshToken(it) }
+            tokens?.let {
+                val (access, refresh) = it
+                call.response.cookies.append(REFRESH_TOKEN_COOKIE, refresh, httpOnly = true)
+                call.respond(HttpStatusCode.OK, AccessTokenResponse(access))
+            } ?: call.respond(HttpStatusCode.Unauthorized)
+        }
     }
 }

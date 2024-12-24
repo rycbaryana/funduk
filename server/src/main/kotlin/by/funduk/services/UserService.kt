@@ -27,4 +27,16 @@ object UserService {
             }.singleOrNull()
         }
     }
+
+    suspend fun findByUserId(userId: Int): User? {
+        return query {
+            Users.selectAll().where { Users.id eq userId }.mapNotNull {
+                User(
+                    it[Users.id].value,
+                    it[Users.username],
+                    it[Users.password]
+                )
+            }.singleOrNull()
+        }
+    }
 }

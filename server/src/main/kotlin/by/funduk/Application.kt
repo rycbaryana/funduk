@@ -7,12 +7,8 @@ import by.funduk.plugins.configureDatabase
 import by.funduk.plugins.configureSwagger
 import by.funduk.routes.authRoutes
 import by.funduk.routes.submitRoutes
-import by.funduk.services.NotificationClient
-import by.funduk.services.NotificationService
-import by.funduk.services.TaskService
-import by.funduk.services.UserService
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
+import by.funduk.services.*
+import by.funduk.utils.extractUserId
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
@@ -30,6 +26,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -47,7 +44,8 @@ object AuthConfig {
     lateinit var secret: String
     lateinit var issuer: String
     lateinit var audience: String
-    fun loadConfig() {
+
+    init {
         secret = "secret"
         issuer = "AuthService"
         audience = "UserService"
@@ -55,7 +53,6 @@ object AuthConfig {
 }
 
 fun Application.module() {
-    AuthConfig.loadConfig()
     install(CORS) {
         anyHost()
         allowHeader(HttpHeaders.ContentType)
@@ -74,64 +71,25 @@ fun Application.module() {
     }
     install(Authentication) {
         jwt("auth-jwt") {
-            verifier(AuthConfig.run {
-                JWT.require(Algorithm.HMAC256(secret)).withIssuer(issuer).withAudience(audience).build()
-            })
+            verifier(AuthService.verifier)
             validate { credential ->
-                if (credential.payload.subject.toIntOrNull() != null) {
-                    JWTPrincipal(credential.payload)
-                } else {
-                    null
-                }
+                AuthService.validate(credential)
             }
         }
     }
     install(WebSockets) {
         contentConverter = KotlinxWebsocketSerializationConverter(Json)
     }
+
     configureSwagger()
     val database = configureDatabase()
 
     transaction(database) {
-        SchemaUtils.drop(Tasks, Users, Tags, TasksTags, Submissions, Comments)
-        SchemaUtils.create(Tasks, Users, Tags, TasksTags, Submissions, Comments)
+        SchemaUtils.drop(Tasks, Users, Tags, TasksTags, Submissions, Comments, RefreshTokens)
+        SchemaUtils.create(Tasks, Users, Tags, TasksTags, Submissions, Comments, RefreshTokens)
     }
 
-
-    launch {
-        TaskService.apply {
-            add(
-                Task(
-                    name = "Hello, world!",
-                    statement = "Print \"Hello, world!\" to the standard output.",
-                    rank = Rank.Calf,
-                    tags = listOf(Tag.Greedy, Tag.TwoSAT)
-
-                )
-            )
-            add(
-                Task(
-                    name = "x^3",
-                    statement = "Write a program that takes an integer input x and prints the result of x ^ 3 to the standard output.",
-                    rank = Rank.Cow,
-                    tags = listOf(Tag.DP, Tag.BinSearch)
-                )
-            )
-            add(
-                Task(
-                    name = "Alice and Bob",
-                    statement = "Alice and Bob each have 2 apples. How many apples in total they possess?",
-                    rank = Rank.MediumRare,
-                    tags = listOf(Tag.DS, Tag.FFT)
-
-                )
-            )
-        }
-        UserService.apply {
-            addUser("vlad", "pumpum")
-        }
-    }
-
+    populateDatabase()
 
     routing {
         get("/ping") {
@@ -167,19 +125,55 @@ fun Application.module() {
                 NotificationService.unsubscribe(client)
             }
         }
+
         authenticate("auth-jwt") {
             get("/me") {
                 val principal = call.principal<JWTPrincipal>()
-                val username = principal!!.payload.getClaim("username").asString()
-                call.respondText("Hello, $username")
+                principal?.let {
+                    val userId = extractUserId(it.payload)
+                    call.respondText {
+                        "Hello, ${UserService.findByUserId(userId)?.username}"
+                    }
+                } ?: call.respond(HttpStatusCode.Unauthorized)
             }
 
         }
         authRoutes()
-        singlePageApplication {
-            useResources = true
-            defaultPage = "index.html"
+    }
+}
+
+private fun CoroutineScope.populateDatabase() =
+    launch {
+        TaskService.apply {
+            add(
+                Task(
+                    name = "Hello, world!",
+                    statement = "Print \"Hello, world!\" to the standard output.",
+                    rank = Rank.Calf,
+                    tags = listOf(Tag.Greedy, Tag.TwoSAT)
+
+                )
+            )
+            add(
+                Task(
+                    name = "x^3",
+                    statement = "Write a program that takes an integer input x and prints the result of x ^ 3 to the standard output.",
+                    rank = Rank.Cow,
+                    tags = listOf(Tag.DP, Tag.BinSearch)
+                )
+            )
+            add(
+                Task(
+                    name = "Alice and Bob",
+                    statement = "Alice and Bob each have 2 apples. How many apples in total they possess?",
+                    rank = Rank.MediumRare,
+                    tags = listOf(Tag.DS, Tag.FFT)
+
+                )
+            )
+        }
+        UserService.apply {
+            addUser("vlad", "pumpum")
         }
     }
 
-}
