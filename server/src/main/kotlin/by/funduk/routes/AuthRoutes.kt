@@ -36,7 +36,7 @@ fun Route.authRoutes() {
             if (user != null && checkPassword(request.password, user.password)) {
                 val access = AuthService.createAccessToken(user.id!!)
                 val refresh = AuthService.createRefreshToken(user.id!!)
-                call.response.cookies.append(REFRESH_TOKEN_COOKIE, refresh, httpOnly = true)
+                call.response.cookies.append(REFRESH_TOKEN_COOKIE, refresh)
                 call.respond(HttpStatusCode.OK, AccessTokenResponse(access))
             } else {
                 call.respond(HttpStatusCode.Unauthorized, "Invalid credentials")

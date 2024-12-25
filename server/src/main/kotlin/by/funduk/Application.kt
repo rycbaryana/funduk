@@ -9,6 +9,7 @@ import by.funduk.routes.authRoutes
 import by.funduk.routes.submitRoutes
 import by.funduk.services.*
 import by.funduk.utils.extractUserId
+import by.funduk.utils.hashPassword
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
 import io.ktor.serialization.kotlinx.json.*
@@ -107,6 +108,7 @@ fun Application.module() {
         route("/api") {
             taskRoutes()
             submitRoutes()
+            authRoutes()
         }
         webSocket("/notifications/{task_id}") {
             val taskId = call.parameters["task_id"]!!.toInt()
@@ -138,7 +140,6 @@ fun Application.module() {
             }
 
         }
-        authRoutes()
     }
 }
 
@@ -173,7 +174,7 @@ private fun CoroutineScope.populateDatabase() =
             )
         }
         UserService.apply {
-            addUser("vlad", "pumpum")
+            addUser("vlad", hashPassword("1234Debil$"))
         }
     }
 

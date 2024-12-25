@@ -1,5 +1,7 @@
 package by.funduk.ui
 
+import by.funduk.api.AuthenticateApi
+import by.funduk.api.RegisterResult
 import web.dom.document
 import react.*
 import react.dom.client.createRoot
@@ -149,7 +151,10 @@ private val LogInPage = FC<Props> { props ->
                                 if (canLogIn) {
                                     canLogIn = false
                                     //log in
-                                    println("log in");
+                                    println("log in")
+                                    mainScope.launch {
+                                        AuthenticateApi.logIn(nick, password)
+                                    }
                                     // loginNotification = "invalid nickname or password"
                                     canLogIn = true
                                 }
@@ -287,7 +292,23 @@ private val LogInPage = FC<Props> { props ->
                                         registerNotification = "nickname/password is in wrong format"
                                     } else {
                                         //register
-                                        println("register")
+                                        mainScope.launch {
+                                            val res = AuthenticateApi.register(nick, pass)
+
+                                            when(res) {
+                                                RegisterResult.Registered -> {
+                                                    //registered
+                                                }
+
+                                                RegisterResult.AlreadyExist -> {
+                                                    registerNotification = "this user already exists"
+                                                }
+
+                                                RegisterResult.UnknownError -> {
+                                                    registerNotification = "unknown error, try again later"
+                                                }
+                                            }
+                                        }
                                     }
                                     canRegister = true
                                 }

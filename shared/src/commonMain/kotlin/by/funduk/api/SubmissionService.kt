@@ -3,6 +3,7 @@ package by.funduk.api
 import by.funduk.model.*
 import by.funduk.ui.SubmissionView
 import io.ktor.client.call.*
+import io.ktor.client.plugins.cookies.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.http.*
