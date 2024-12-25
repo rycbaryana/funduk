@@ -56,10 +56,11 @@ object AuthConfig {
 fun Application.module() {
     install(CORS) {
         anyHost()
-        allowHeader(HttpHeaders.ContentType)
         allowMethod(HttpMethod.Delete)
-        allowHeader(HttpHeaders.Authorization)
         allowMethod(HttpMethod.Post)
+        allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.Authorization)
+        allowCredentials = true
     }
     install(ContentNegotiation) {
         json()
