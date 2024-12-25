@@ -5,6 +5,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
+import io.ktor.server.plugins.httpsredirect.*
 import io.ktor.server.response.*
 
 fun main() {
@@ -12,6 +13,10 @@ fun main() {
 }
 
 fun Application.module() {
+    install(HttpsRedirect) {
+        sslPort = 8443
+        permanentRedirect = true
+    }
     routing {
         get("/") {
             call.respondRedirect("/archive")

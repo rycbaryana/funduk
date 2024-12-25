@@ -1,7 +1,6 @@
 package by.funduk.ui
 
-import by.funduk.api.AuthenticateApi
-import by.funduk.api.RegisterResult
+import by.funduk.api.*
 import web.dom.document
 import react.*
 import react.dom.client.createRoot
@@ -12,20 +11,27 @@ import react.dom.html.ReactHTML.input
 import emotion.react.*
 
 import kotlinx.browser.window
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import web.cssom.px
 import web.cssom.*
 
-import by.funduk.api.TasksApi
-import by.funduk.api.SubmissionApi
 import by.funduk.model.*
+import by.funduk.ui.api.logIn
 import by.funduk.ui.general.*
 import by.funduk.ui.system.*
+import js.promise.Promise
 import kotlinx.coroutines.*
 import org.w3c.dom.events.Event
+import org.w3c.fetch.INCLUDE
+import org.w3c.fetch.RequestCredentials
+import org.w3c.fetch.RequestInit
 import web.html.HTMLTextAreaElement
 import web.html.HTMLDivElement
 import web.html.HTMLInputElement
 import web.html.InputType
+import web.http.RequestMethod
+import kotlin.js.json
 import kotlin.math.min
 import kotlin.time.Duration.Companion.seconds
 
@@ -124,7 +130,7 @@ private val LogInPage = FC<Props> { props ->
 
                 inputField {
                     ref = nicknameInput
-                    placeholder = "nickname"
+                    placeholder = "login"
                 }
 
                 inputField {
@@ -151,12 +157,17 @@ private val LogInPage = FC<Props> { props ->
                                 if (canLogIn) {
                                     canLogIn = false
                                     //log in
-                                    println("log in")
+                                    println(document.cookie)
+
                                     mainScope.launch {
-                                        AuthenticateApi.logIn(nick, password)
+                                        val token = AuthenticationApi.logIn(nick, password)
+                                        if (token == null) {
+                                            loginNotification = "invalid login or password"
+                                        } else {
+                                            window.location.href = "/user/$nick"
+                                        }
+                                        canLogIn = true
                                     }
-                                    // loginNotification = "invalid nickname or password"
-                                    canLogIn = true
                                 }
                             }
                         }
@@ -235,7 +246,7 @@ private val LogInPage = FC<Props> { props ->
 
                 inputField {
                     ref = nicknameInput
-                    placeholder = "nickname"
+                    placeholder = "login"
                 }
 
                 inputField {
@@ -290,14 +301,15 @@ private val LogInPage = FC<Props> { props ->
                                     canRegister = false
                                     if (!IsValidNickname(nick) || !isValidPassword(pass) || pass != rep) {
                                         registerNotification = "nickname/password is in wrong format"
+                                        canRegister = true
                                     } else {
                                         //register
                                         mainScope.launch {
-                                            val res = AuthenticateApi.register(nick, pass)
+                                            val res = AuthenticationApi.register(nick, pass)
 
-                                            when(res) {
+                                            when (res) {
                                                 RegisterResult.Registered -> {
-                                                    //registered
+                                                    window.location.href = "/user/$nick"
                                                 }
 
                                                 RegisterResult.AlreadyExist -> {
@@ -308,9 +320,9 @@ private val LogInPage = FC<Props> { props ->
                                                     registerNotification = "unknown error, try again later"
                                                 }
                                             }
+                                            canRegister = true
                                         }
                                     }
-                                    canRegister = true
                                 }
                             }
                         }
