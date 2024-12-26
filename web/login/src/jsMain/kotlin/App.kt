@@ -21,6 +21,7 @@ import by.funduk.ui.api.InitPage
 import by.funduk.ui.api.logIn
 import by.funduk.ui.general.*
 import by.funduk.ui.system.*
+import io.ktor.client.call.*
 import io.ktor.http.*
 import js.promise.Promise
 import kotlinx.coroutines.*
@@ -166,7 +167,13 @@ private val LogInPage = FC<Props> { props ->
                                         if (token == null) {
                                             loginNotification = "invalid login or password"
                                         } else {
-                                            window.location.href = "/user/$nick"
+                                            AuthenticationApi.me(token).let {
+                                                if (it.status == HttpStatusCode.OK) {
+                                                    window.location.href = "/user/${it.body<Int>()}"
+                                                } else {
+                                                    loginNotification = "internal error"
+                                                }
+                                            }
                                         }
                                         canLogIn = true
                                     }
@@ -311,7 +318,7 @@ private val LogInPage = FC<Props> { props ->
 
                                             when (res.status) {
                                                 HttpStatusCode.Created -> {
-                                                    window.location.href = "/user/$nick"
+                                                    isLoginField = true
                                                 }
 
                                                 HttpStatusCode.Conflict -> {
@@ -442,7 +449,9 @@ private val LogInPage = FC<Props> { props ->
 
     }
 
-    nav {}
+    nav {
+        user = UserButtonType.LogIn
+    }
 }
 
 fun start() {

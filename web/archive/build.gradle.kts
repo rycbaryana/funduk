@@ -15,6 +15,8 @@ kotlin {
                 implementation(jsLibs.reactDom)
                 implementation(jsLibs.emotion)
                 implementation(jsLibs.csstype)
+                implementation(libs.ktor.serialization.json)
+                implementation(libs.ktor.client.js)
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:${libs.versions.kotlinx.coroutines.get()}")
                 implementation(projects.web.common)

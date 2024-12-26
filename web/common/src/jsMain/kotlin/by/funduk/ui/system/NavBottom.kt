@@ -24,6 +24,9 @@ enum class UserButtonType {
 
 external interface NavProps : Props {
     var page: NavPage?
+    var user: UserButtonType
+    var userName: String
+    var userId: Int?
 }
 
 val nav = FC<NavProps> { props ->
@@ -115,20 +118,30 @@ val nav = FC<NavProps> { props ->
                 }
             }
 
-            div {
+            a {
                 css {
-                    display = Display.flex
-                    minWidth = Sizes.Nav.SideInfoWidth
-                    flexDirection = FlexDirection.row
-                    justifyContent = JustifyContent.end
+                    textDecoration = TextDecoration.solid
                 }
+                href =
+                    if (props.user == UserButtonType.LogIn) "/authenticate" else if (props.user == UserButtonType.LogOut) "/logout" else "/user/${props.userId}"
+                div {
+                    css {
+                        display = Display.flex
+                        minWidth = Sizes.Nav.SideInfoWidth
+                        flexDirection = FlexDirection.row
+                        justifyContent = JustifyContent.end
+                        cursor = Cursor.pointer
+                    }
 
-                textFrame {
-                    forbbidSelection = true
-                    text = "Me"
-                    color = Pallete.Web.DarkText
-                    size = Sizes.Font.Big
-                    margins = listOf(Sizes.RegularMargin, Sizes.RegularMargin, Sizes.BiggerMargin, Sizes.BiggerMargin)
+                    textFrame {
+                        forbbidSelection = true
+                        text =
+                            if (props.user == UserButtonType.LogIn) "Log in" else if (props.user == UserButtonType.LogOut) "log out" else props.userName
+                        color = Pallete.Web.DarkText
+                        size = Sizes.Font.Big
+                        margins =
+                            listOf(Sizes.RegularMargin, Sizes.RegularMargin, Sizes.BiggerMargin, Sizes.BiggerMargin)
+                    }
                 }
             }
         }

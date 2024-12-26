@@ -13,4 +13,11 @@ object AuthenticationApi {
             setBody(AuthRequest(username, password))
         }
     }
+
+    suspend fun me(access: String) = client.get(kApiAddress) {
+        url {
+            appendPathSegments("me")
+        }
+        headers.append(HttpHeaders.Authorization, "Bearer $access")
+    }
 }

@@ -39,6 +39,32 @@ suspend fun AuthenticationApi.logIn(username: String, password: String): String?
     return token?.accessToken
 }
 
+suspend fun AuthenticationApi.Me(): Int? {
+    val id: Int? = window.fetch(
+        "$kApiAddress/me",
+        RequestInit(
+            method = "Get",
+            credentials = RequestCredentials.INCLUDE,
+            headers = json(
+                "Content-Type" to "application/json",
+                "Accept" to "application/json"
+            )
+        )
+    ).then { response ->
+        if (response.ok) {
+            response.text()
+        } else {
+            Promise.reject(Exception("bad request"))
+        }
+    }.then {
+        Json.decodeFromString<Int>(it as String)
+    }.catch {
+        null
+    }.await()
+
+    return id
+}
+
 suspend fun AuthenticationApi.refresh(): String? {
     val token: AccessTokenResponse? = window.fetch(
         "$kApiAddress/auth/login",

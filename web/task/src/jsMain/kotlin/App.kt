@@ -1,5 +1,6 @@
 package by.funduk.ui
 
+import by.funduk.api.AuthenticationApi
 import web.dom.document
 import react.*
 import react.dom.client.createRoot
@@ -188,23 +189,34 @@ private val TaskPage = FC<Props> { props ->
                     }
                     InitPage()
 
-//                    userId =
+                    val id = withAuth { access ->
+                        AuthenticationApi.me(access)
+                    }.let {
+                        if (it.status == HttpStatusCode.OK) {
+                            it.body<Int>()
+                        } else {
+                            null
+                        }
+                    }
+
+                    userId = id
 
                     if (loaded_task == null) {
                         textOnNull = "We do not recognize this task"
                     } else {
-                        setSubmissionViews(SubmissionApi.getSubmissionViews(taskId, 1).let {
-                            if (it.status == HttpStatusCode.OK) {
-                                it.body<List<SubmissionView>>()
-                            } else {
-                                listOf()
-                            }
-                        })
+                        if (id != null) {
+                            setSubmissionViews(SubmissionApi.getSubmissionViews(taskId, id).let {
+                                if (it.status == HttpStatusCode.OK) {
+                                    it.body<List<SubmissionView>>()
+                                } else {
+                                    listOf()
+                                }
+                            })
+                        }
 
                     }
                     document.title = loaded_task?.name ?: "unknown task"
                     task = loaded_task
-
                 }
             }
             useEffectOnce {
@@ -775,7 +787,12 @@ private val TaskPage = FC<Props> { props ->
 
     }
 
-    nav {}
+    nav {
+        user = when(userId) {
+            null -> UserButtonType.LogIn
+            else -> UserButtonType.UserPage
+        }
+    }
 
     val hideContext: (Event?) -> Unit = {
         refLanguageListMenu.current?.style?.visibility = "hidden"

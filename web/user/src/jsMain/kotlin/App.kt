@@ -1,5 +1,6 @@
 package by.funduk.ui
 
+import by.funduk.api.AuthenticationApi
 import web.dom.document
 import react.*
 import react.dom.client.createRoot
@@ -18,8 +19,11 @@ import by.funduk.api.TasksApi
 import by.funduk.api.SubmissionApi
 import by.funduk.model.*
 import by.funduk.ui.api.InitPage
+import by.funduk.ui.api.withAuth
 import by.funduk.ui.general.*
 import by.funduk.ui.system.*
+import io.ktor.client.call.*
+import io.ktor.http.*
 import kotlinx.coroutines.*
 import org.w3c.dom.events.Event
 import web.html.HTMLTextAreaElement
@@ -37,17 +41,24 @@ enum class ContentType {
 
 var mainScope = MainScope()
 
-var IsMyAccount = false
-
-var user: User? = null
+var userId: Int? = null
 
 private val LogInPage = FC<Props> { props ->
-    var userId by useState<Int?>(null)
+    var currentUserId by useState<Int?>(null)
     var contentType by useState<ContentType>(ContentType.General)
 
     useEffectOnce {
         mainScope.launch {
             InitPage()
+            currentUserId = withAuth { access ->
+                AuthenticationApi.me(access)
+            }.let {
+                if (it.status == HttpStatusCode.OK) {
+                    it.body<Int>()
+                } else {
+                    null
+                }
+            }
         }
     }
 
@@ -73,7 +84,7 @@ private val LogInPage = FC<Props> { props ->
 
             div {
                 css {
-                    if (user == User.Unknown) {
+                    if (userId == null) {
                         visibility = Visibility.hidden
                         height = 0.px
                     } else {
@@ -82,7 +93,7 @@ private val LogInPage = FC<Props> { props ->
                     }
                 }
                 textFrame {
-                    text = if (user == User.Unknown) "We do not recognize this user" else "Loading user info..."
+                    text = if (userId == null) "We do not recognize this user" else "Loading user info..."
                     size = Sizes.Font.Big
                     color = Pallete.Web.SecondPlan
                 }
@@ -91,7 +102,7 @@ private val LogInPage = FC<Props> { props ->
             // user exists
             div {
                 css {
-                    if (user == null || user == User.Unknown) {
+                    if (userId == null) {
                         visibility = Visibility.hidden
                         height = 0.px
                     }
@@ -139,7 +150,7 @@ private val LogInPage = FC<Props> { props ->
                             display = Display.flex
                             cursor = Cursor.pointer
                         }
-                        textFrame{
+                        textFrame {
                             text = "generals"
                         }
                     }
@@ -149,7 +160,7 @@ private val LogInPage = FC<Props> { props ->
                             display = Display.flex
                             cursor = Cursor.pointer
                         }
-                        textFrame{
+                        textFrame {
                             text = "submissions"
                         }
                     }
@@ -159,7 +170,7 @@ private val LogInPage = FC<Props> { props ->
                             display = Display.flex
                             cursor = Cursor.pointer
                         }
-                        textFrame{
+                        textFrame {
                             text = "tasks"
                         }
                     }
@@ -167,13 +178,15 @@ private val LogInPage = FC<Props> { props ->
 
                 // content
                 div {
-                    when(contentType) {
+                    when (contentType) {
                         ContentType.General -> {
 
                         }
+
                         ContentType.Submissions -> {
 
                         }
+
                         ContentType.Tasks -> {
 
                         }
@@ -188,10 +201,16 @@ private val LogInPage = FC<Props> { props ->
 
     }
 
-    nav {}
+    nav {
+        user = when (userId) {
+            null -> UserButtonType.LogIn
+            else -> UserButtonType.LogOut
+        }
+    }
 }
 
 fun start() {
+    userId = window.location.href.split("/").lastOrNull()?.toIntOrNull()
     val container = document.getElementById("root") ?: error("Couldn't find root container!")
     createRoot(container).render(LogInPage.create())
 }
