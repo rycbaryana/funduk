@@ -33,6 +33,7 @@ object Submissions : IntIdTable("submissions") {
     val code = text("code")
     val language = varchar("language", 16)
     val status = varchar("status", 8)
+    val test = integer("test").default(0)
     val time = integer("time").default(0)
     val memory = integer("memory").default(0)
 }
@@ -49,4 +50,10 @@ object Comments : IntIdTable("comments") {
 object RefreshTokens: IntIdTable("refresh_tokens") {
     val userId = RefreshTokens.reference("user_id", Users)
     val token = text("token")
+}
+
+object TestCases: IntIdTable("test_cases") {
+    val taskId = TestCases.reference("task_id", Tasks)
+    val input = text("input")
+    val output = text("output")
 }

@@ -87,8 +87,8 @@ fun Application.module() {
     val database = configureDatabase()
 
     transaction(database) {
-        SchemaUtils.drop(Tasks, Users, Tags, TasksTags, Submissions, Comments, RefreshTokens)
-        SchemaUtils.create(Tasks, Users, Tags, TasksTags, Submissions, Comments, RefreshTokens)
+        SchemaUtils.drop(Tasks, Users, Tags, TasksTags, Submissions, Comments, RefreshTokens, TestCases)
+        SchemaUtils.create(Tasks, Users, Tags, TasksTags, Submissions, Comments, RefreshTokens, TestCases)
     }
 
     populateDatabase()
@@ -153,9 +153,12 @@ private fun CoroutineScope.populateDatabase() =
                     statement = "Print \"Hello, world!\" to the standard output.",
                     rank = Rank.Calf,
                     tags = listOf(Tag.Greedy, Tag.TwoSAT)
-
                 )
-            )
+            ).let {
+                TestService.apply {
+                    addTestCase(it, TestCase("", "Hello, world!"))
+                }
+            }
             add(
                 Task(
                     name = "x^3",
@@ -163,16 +166,29 @@ private fun CoroutineScope.populateDatabase() =
                     rank = Rank.Cow,
                     tags = listOf(Tag.DP, Tag.BinSearch)
                 )
-            )
+            ).let {
+                TestService.apply {
+                    addTestCase(it, TestCase("1", "1"))
+                    addTestCase(it, TestCase("3", "27"))
+                    addTestCase(it, TestCase("-2", "-8"))
+                    addTestCase(it, TestCase("-3", "-27"))
+                }
+            }
             add(
                 Task(
                     name = "Alice and Bob",
-                    statement = "Alice and Bob each have 2 apples. How many apples in total they possess?",
+                    statement = "Alice has x apples and Bob has y apples. How many apples in total they possess?",
                     rank = Rank.MediumRare,
                     tags = listOf(Tag.DS, Tag.FFT)
-
                 )
-            )
+            ).let {
+                TestService.apply {
+                    addTestCase(it, TestCase("1 2", "3"))
+                    addTestCase(it, TestCase("2 2", "4"))
+                    addTestCase(it, TestCase("1000 20000", "21000"))
+                    addTestCase(it, TestCase("30 0", "30"))
+                }
+            }
         }
         UserService.apply {
             addUser("vlad", hashPassword("1234Debil$"))

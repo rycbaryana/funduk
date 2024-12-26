@@ -9,5 +9,5 @@ data class Task(
     val statement: String,
     val rank: Rank,
     val tags: List<Tag> = listOf(),
-    val solvedCount: Int = 0
+    val solvedCount: Int = 0,
 )

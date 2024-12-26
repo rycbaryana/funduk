@@ -16,7 +16,7 @@ object SubmitService {
         return id
     }
 
-    suspend fun insert(submission: Submission): Int = query {
+    private suspend fun insert(submission: Submission): Int = query {
         Submissions.insert {
             it[taskId] = submission.taskId
             it[userId] = submission.userId
@@ -31,9 +31,12 @@ object SubmitService {
 
     suspend fun updateTestInfo(id: Int, info: TestInfo): Int = query {
         Submissions.update({ Submissions.id eq id }) {
-            it[Submissions.status] = info.status.toString()
-            it[Submissions.time] = info.time
-            it[Submissions.memory] = info.memory
+            it[status] = info.status.toString()
+            it[time] = info.time
+            it[memory] = info.memory
+            if (info.status != Status.Running) {
+                it[test] = info.test
+            }
         }
     }
 
@@ -41,6 +44,12 @@ object SubmitService {
         Submissions.selectAll()
             .where { Submissions.id eq id }
             .map {
+                val status = Status.valueOf(it[Submissions.status])
+                val test = if (status == Status.Running) {
+                    TestService.getCurrentTest(it[Submissions.id].value)
+                } else {
+                    it[Submissions.test]
+                }
                 Submission(
                     id = it[Submissions.id].value,
                     taskId = it[Submissions.taskId].value,
@@ -49,15 +58,15 @@ object SubmitService {
                     code = it[Submissions.code],
                     language = Language.valueOf(it[Submissions.language]),
                     testInfo = TestInfo(
-                        Status.valueOf(it[Submissions.status]),
-                        0,
+                        status,
+                        test,
                         it[Submissions.time],
                         it[Submissions.memory]
                     )
                 )
             }
             .singleOrNull()
-    }?.also { it.testInfo.test = TestService.getCurrentTest(it.id!!) }
+    }
 
     suspend fun getSubmissionView(id: Int): SubmissionView? = query {
         (Submissions innerJoin Tasks innerJoin Users).selectAll()
@@ -66,34 +75,39 @@ object SubmitService {
                 getViewFromRow(it)
             }
             .singleOrNull()
-    }?.also { it.testInfo.test = TestService.getCurrentTest(it.id!!) }
+    }
 
     suspend fun getSubmissionViews(taskId: Int, userId: Int, count: Int, offset: Int): List<SubmissionView> = query {
-        (Submissions innerJoin Tasks innerJoin Users).selectAll().limit(count).offset(offset.toLong()).orderBy(Submissions.submitTime to SortOrder.DESC)
+        (Submissions innerJoin Tasks innerJoin Users).selectAll().limit(count).offset(offset.toLong())
+            .orderBy(Submissions.submitTime to SortOrder.DESC)
             .where { (Submissions.taskId eq taskId) and (Submissions.userId eq userId) }.mapNotNull {
                 getViewFromRow(it)
             }
-    }.also { views ->
-        views.filter { it.testInfo.status == Status.Running }.forEach {
-            it.testInfo.test = TestService.getCurrentTest(it.id!!)
-        }
     }
 
-    private fun getViewFromRow(row: ResultRow): SubmissionView = SubmissionView(
-        id = row[Submissions.id].value,
-        taskId = row[Submissions.taskId].value,
-        userId = row[Submissions.userId].value,
-        taskName = row[Tasks.name],
-        userName = row[Users.username],
-        submitTime = row[Submissions.submitTime].toKotlinLocalDateTime(),
-        language = Language.valueOf(row[Submissions.language]),
-        testInfo = TestInfo(
-            Status.valueOf(row[Submissions.status]),
-            0,
-            row[Submissions.time],
-            row[Submissions.memory]
+    private fun getViewFromRow(row: ResultRow): SubmissionView {
+        val status = Status.valueOf(row[Submissions.status])
+        val test = if (status == Status.Running) {
+            TestService.getCurrentTest(row[Submissions.id].value)
+        } else {
+            row[Submissions.test]
+        }
+        return SubmissionView(
+            id = row[Submissions.id].value,
+            taskId = row[Submissions.taskId].value,
+            userId = row[Submissions.userId].value,
+            taskName = row[Tasks.name],
+            userName = row[Users.username],
+            submitTime = row[Submissions.submitTime].toKotlinLocalDateTime(),
+            language = Language.valueOf(row[Submissions.language]),
+            testInfo = TestInfo(
+                status,
+                test,
+                row[Submissions.time],
+                row[Submissions.memory]
+            )
         )
-    )
+    }
 
     suspend fun delete(id: Int): Boolean {
         return query {

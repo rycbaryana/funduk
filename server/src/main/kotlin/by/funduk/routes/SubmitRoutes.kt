@@ -1,10 +1,13 @@
 package by.funduk.routes
 
+import by.funduk.api.SubmitRequest
 import by.funduk.model.Submission
-import by.funduk.model.RawSubmission
 import by.funduk.services.SubmitService
+import by.funduk.utils.extractUserId
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -13,33 +16,38 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.*
 
 fun Route.submitRoutes() {
-    route("/submit") {
-        post {
-            val rawSubmission: RawSubmission = call.receive()
+
+    authenticate("auth-jwt") {
+        post("/submit") {
+            val submitRequest: SubmitRequest = call.receive()
             val submission = Submission(
                 null,
-                rawSubmission.taskId,
-                rawSubmission.userId,
+                submitRequest.taskId,
+                extractUserId(call.principal<JWTPrincipal>()!!.payload),
                 Clock.System.now().toLocalDateTime(TimeZone.of("Europe/Moscow")),
-                rawSubmission.code,
-                rawSubmission.language
+                submitRequest.code,
+                submitRequest.language
             )
-            println(submission)
             val id = SubmitService.submitAndTest(submission)
             call.respond(HttpStatusCode.OK, id)
         }
     }
 
     route("/submission") {
-        get("/{id}") {
-            val id = call.parameters["id"]!!.toInt()
-            val submission = SubmitService.getSubmission(id)
-            if (submission == null) {
-                call.respond(HttpStatusCode.NotFound)
-            } else {
-                call.respond(HttpStatusCode.OK, submission)
+        authenticate("auth-jwt") {
+            get("/{id}") {
+                val id = call.parameters["id"]!!.toInt()
+                val submission = SubmitService.getSubmission(id)
+                if (submission == null) {
+                    call.respond(HttpStatusCode.NotFound)
+                } else if (submission.userId != extractUserId(call.principal<JWTPrincipal>()!!.payload)) {
+                    call.respond(HttpStatusCode.Forbidden)
+                } else {
+                    call.respond(HttpStatusCode.OK, submission)
+                }
             }
         }
+
 
         route("/views") {
             get {

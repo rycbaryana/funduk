@@ -15,6 +15,7 @@ import web.cssom.*
 
 import by.funduk.api.TasksApi
 import by.funduk.api.SubmissionApi
+import by.funduk.api.SubmitRequest
 import by.funduk.model.*
 import by.funduk.ui.general.*
 import by.funduk.ui.system.*
@@ -25,7 +26,6 @@ import web.html.HTMLDivElement
 import web.html.HTMLInputElement
 import web.html.InputType
 import kotlin.math.min
-import kotlin.time.Duration.Companion.seconds
 
 var taskId = 0
 
@@ -633,8 +633,8 @@ private val TaskPage = FC<Props> { props ->
                                             onClick = { e ->
                                                 if (canSubmit) {
                                                     canSubmit = false
-                                                    val submission = RawSubmission(
-                                                        taskId, 1, refEditor.current?.value ?: "", language
+                                                    val submission = SubmitRequest(
+                                                        taskId, refEditor.current?.value ?: "", language
                                                     )
                                                     mainScope.launch {
                                                         val id = SubmissionApi.submit(submission)

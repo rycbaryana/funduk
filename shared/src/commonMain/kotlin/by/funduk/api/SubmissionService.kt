@@ -3,7 +3,6 @@ package by.funduk.api
 import by.funduk.model.*
 import by.funduk.ui.SubmissionView
 import io.ktor.client.call.*
-import io.ktor.client.plugins.cookies.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -49,7 +48,7 @@ object SubmissionApi {
             }
         }.body()
 
-    suspend fun submit(submission: RawSubmission): Int? {
+    suspend fun submit(submission: SubmitRequest): Int? {
         val rep = client.post(kApiAddress) {
             url {
                 appendPathSegments("submit")
