@@ -1,6 +1,8 @@
 package by.funduk.ui
 
 import by.funduk.api.AuthenticationApi
+import by.funduk.api.UserApi
+import by.funduk.model.UserInfo
 import by.funduk.ui.api.InitPage
 import by.funduk.ui.api.withAuth
 import by.funduk.ui.general.Sizes
@@ -22,6 +24,7 @@ val mainScope = MainScope()
 
 private val Archive = FC<Props> { _ ->
     var userId by useState<Int?>(null)
+    var userInfo by useState<UserInfo?>(null)
     div {
         css {
             padding = 0.px
@@ -42,6 +45,15 @@ private val Archive = FC<Props> { _ ->
             }
 
             userId = id
+            if (id != null) {
+                userInfo = UserApi.getUserInfo(id).let {
+                    if (it.status == HttpStatusCode.OK) {
+                        it.body<UserInfo>()
+                    } else {
+                        null
+                    }
+                }
+            }
         }
         // body
         div {
@@ -71,6 +83,7 @@ private val Archive = FC<Props> { _ ->
                 else -> UserButtonType.UserPage
             }
             id = userId
+            userName = userInfo?.realName ?: userInfo?.login ?: "unknown"
         }
     }
 }

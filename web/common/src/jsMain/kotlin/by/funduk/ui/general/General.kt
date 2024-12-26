@@ -180,6 +180,8 @@ sealed interface Sizes {
 
         val LoadMoreButtonHeight = 25.pt;
         val LoadMoreButtonWidth = 70.pt
+
+        val OneLineTextFieldWidth = 150.pt
     }
 }
 

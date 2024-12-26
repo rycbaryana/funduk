@@ -1,6 +1,6 @@
 package by.funduk.ui
 
-import by.funduk.api.AuthenticationApi
+import by.funduk.api.*
 import web.dom.document
 import react.*
 import react.dom.client.createRoot
@@ -14,9 +14,6 @@ import kotlinx.browser.window
 import web.cssom.px
 import web.cssom.*
 
-import by.funduk.api.TasksApi
-import by.funduk.api.SubmissionApi
-import by.funduk.api.SubmitRequest
 import by.funduk.model.*
 import by.funduk.ui.api.InitPage
 import by.funduk.ui.api.withAuth
@@ -136,6 +133,12 @@ private val TaskPage = FC<Props> { props ->
 
     val (submissionViews, setSubmissionViews) = useState<List<SubmissionView>>(mutableListOf())
     var userId by useState<Int?>(null)
+    var userInfo by useState<UserInfo?>(null)
+
+    var canSubmit by useState(true)
+    var fileButtonName by useState<String?>(null)
+    var language by useState(Language.entries[0])
+    var isShortened by useState(true)
 
     fun handleSubmit(view: SubmissionView) {
         setSubmissionViews {
@@ -199,9 +202,17 @@ private val TaskPage = FC<Props> { props ->
                         }
                     }
 
-                    println(id)
-
                     userId = id
+
+                    if (id != null) {
+                        userInfo = UserApi.getUserInfo(id).let {
+                            if (it.status == HttpStatusCode.OK) {
+                                it.body<UserInfo>()
+                            } else {
+                                null
+                            }
+                        }
+                    }
 
                     if (loaded_task == null) {
                         textOnNull = "We do not recognize this task"
@@ -447,85 +458,10 @@ private val TaskPage = FC<Props> { props ->
                             }
 
                             //submission section
-                            div {
-                                var isShortened by useState(true)
-
-                                css {
-                                    if (submissionViews.isNotEmpty()) {
-                                        display = Display.flex
-                                    } else {
-                                        visibility = Visibility.hidden
-                                        maxHeight = 0.px
-                                        height = 0.px
-                                    }
-                                    position = Position.relative
-                                    flexDirection = FlexDirection.column
-                                    borderRadius = Sizes.BoxBorderRadius
-                                    backgroundColor = Pallete.Web.Light
-                                    alignItems = AlignItems.start
-                                    width = Sizes.TaskStatement.Width
-                                }
-
-                                // box name
-                                textFrame {
-                                    text = "submissions"
-                                    bold = true
-                                }
-
-                                //submit content
+                            if (submissionViews.isNotEmpty()) {
                                 div {
+
                                     css {
-                                        display = Display.flex
-                                        flexDirection = FlexDirection.column
-                                        padding = Sizes.RegularMargin
-                                        paddingTop = 0.px
-                                        width = 100.pct
-                                    }
-
-                                    submissionTable {
-                                        width = 100.pct - 2 * Sizes.RegularMargin
-                                        submissions = if (isShortened) submissionViews.let {
-                                            it.subList(
-                                                0, min(it.size, Counts.UI.SubmissionTable.DefaultNumberOfSubmissions)
-                                            )
-                                        } else submissionViews
-                                    }
-
-                                    // all submissions button
-                                    if (submissionViews.size > Counts.UI.SubmissionTable.DefaultNumberOfSubmissions) {
-                                        div {
-                                            css {
-                                                display = Display.flex
-                                                justifyContent = JustifyContent.center
-                                            }
-                                            div {
-                                                css {
-                                                    display = Display.inlineBlock
-                                                    cursor = Cursor.pointer
-                                                }
-                                                textFrame {
-                                                    text = if (isShortened) "all submissions" else "shorten"
-                                                    size = Sizes.Font.Small
-                                                    color = Pallete.Web.SecondPlan
-                                                }
-                                            }
-
-                                            onClick = {
-                                                isShortened = !isShortened
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            // submit
-                            div {
-                                id = "submit"
-                                css {
-                                    if (userId == null) {
-                                        visibility = Visibility.hidden
-                                        height = 0.px
-                                    } else {
                                         display = Display.flex
                                         position = Position.relative
                                         flexDirection = FlexDirection.column
@@ -534,64 +470,128 @@ private val TaskPage = FC<Props> { props ->
                                         alignItems = AlignItems.start
                                         width = Sizes.TaskStatement.Width
                                     }
-                                }
 
-                                // box name
-                                textFrame {
-                                    text = "submit"
-                                    bold = true
-                                }
-
-                                //submit content
-                                div {
-                                    var canSubmit by useState(true)
-                                    var fileButtonName by useState<String?>(null)
-                                    var language by useState(Language.entries[0])
-                                    css {
-                                        display = Display.flex
-                                        flexDirection = FlexDirection.column
-                                        alignContent = AlignContent.start
-                                        gap = Sizes.SmallMargin
-                                        margin = Sizes.RegularMargin
-                                        marginTop = 0.px
-                                        width = 100.pct
-                                        height = 100.pct
+                                    // box name
+                                    textFrame {
+                                        text = "submissions"
+                                        bold = true
                                     }
 
-                                    // head
+                                    //submit content
                                     div {
                                         css {
                                             display = Display.flex
-                                            gap = Sizes.SmallGap
+                                            flexDirection = FlexDirection.column
+                                            padding = Sizes.RegularMargin
+                                            paddingTop = 0.px
                                             width = 100.pct
                                         }
 
-                                        //select lang
-                                        commonButton {
-                                            text = language.text
-                                            onClick = { e ->
-                                                refLanguageListMenu.current?.style?.visibility = "visible"
-                                                refLanguageListMenu.current?.focus()
-                                                e.stopPropagation()
-                                            }
+                                        submissionTable {
+                                            width = 100.pct - 2 * Sizes.RegularMargin
+                                            submissions = if (isShortened) submissionViews.let {
+                                                it.subList(
+                                                    0,
+                                                    min(it.size, Counts.UI.SubmissionTable.DefaultNumberOfSubmissions)
+                                                )
+                                            } else submissionViews
                                         }
 
-                                        // load file
-                                        input {
+                                        // all submissions button
+                                        if (submissionViews.size > Counts.UI.SubmissionTable.DefaultNumberOfSubmissions) {
+                                            div {
+                                                css {
+                                                    display = Display.flex
+                                                    justifyContent = JustifyContent.center
+                                                }
+                                                div {
+                                                    css {
+                                                        display = Display.inlineBlock
+                                                        cursor = Cursor.pointer
+                                                    }
+                                                    textFrame {
+                                                        text = if (isShortened) "all submissions" else "shorten"
+                                                        size = Sizes.Font.Small
+                                                        color = Pallete.Web.SecondPlan
+                                                    }
+                                                }
+
+                                                onClick = {
+                                                isShortened = !isShortened
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (userId != null) {
+                                // submit
+                                div {
+                                    id = "submit"
+                                    css {
+                                        display = Display.flex
+                                        position = Position.relative
+                                        flexDirection = FlexDirection.column
+                                        borderRadius = Sizes.BoxBorderRadius
+                                        backgroundColor = Pallete.Web.Light
+                                        alignItems = AlignItems.start
+                                        width = Sizes.TaskStatement.Width
+                                    }
+
+                                    // box name
+                                    textFrame {
+                                        text = "submit"
+                                        bold = true
+                                    }
+
+                                    //submit content
+                                    div {
+                                        css {
+                                            display = Display.flex
+                                            flexDirection = FlexDirection.column
+                                            alignContent = AlignContent.start
+                                            gap = Sizes.SmallMargin
+                                            margin = Sizes.RegularMargin
+                                            marginTop = 0.px
+                                            width = 100.pct
+                                            height = 100.pct
+                                        }
+
+                                        // head
+                                        div {
                                             css {
-                                                position = Position.fixed
-                                                visibility = Visibility.hidden
+                                                display = Display.flex
+                                                gap = Sizes.SmallGap
+                                                width = 100.pct
                                             }
 
-                                            ref = refFileInput
-                                            accept = language.extensions.map { ".$it" }.joinToString(" ")
-                                            type = InputType.file
-                                            multiple = false
+                                            //select lang
+                                            commonButton {
+                                                text = language.text
+                                                onClick = { e ->
+                                                    refLanguageListMenu.current?.style?.visibility = "visible"
+                                                    refLanguageListMenu.current?.focus()
+                                                    e.stopPropagation()
+                                                }
+                                            }
 
-                                            onChange = { e ->
-                                                val file = e.target.files?.get(0)
+                                            // load file
+                                            input {
+                                                css {
+                                                    position = Position.fixed
+                                                    visibility = Visibility.hidden
+                                                }
 
-                                                if (file != null) {
+                                                ref = refFileInput
+                                                accept = language.extensions.map { ".$it" }.joinToString(" ")
+                                                type = InputType.file
+                                                multiple = false
+
+                                                onChange = { e ->
+                                                    val file = e.target.files?.get(0)
+
+                                                    if (file != null) {
 //                                                        val reader = FileReader()
 //                                                        reader.onload = { e ->
 //                                                            val data = (reader.result as String?)
@@ -599,147 +599,149 @@ private val TaskPage = FC<Props> { props ->
 //                                                        reader.readAsArrayBuffer(file)
 
 
+                                                    }
+
+                                                    fileButtonName = file?.name ?: "load file"
                                                 }
-
-                                                fileButtonName = file?.name ?: "load file"
                                             }
-                                        }
 
-                                        commonButton {
-                                            text = fileButtonName ?: "load file"
-                                            onClick = {
-                                                refFileInput.current?.click()
-                                            }
-                                        }
-                                    }
-
-                                    //text field
-                                    div {
-                                        css {
-                                            display = Display.flex
-                                            flexDirection = FlexDirection.column
-                                            borderRadius = Sizes.BoxBorderRadius
-                                            backgroundColor = Pallete.Web.SecondLight
-                                            alignItems = AlignItems.start
-                                            width = Sizes.TaskStatement.Width - 4 * Sizes.RegularMargin
-                                            padding = Sizes.RegularMargin
-                                        }
-
-                                        textarea {
-                                            ref = refEditor
-                                            className = ClassName("editor")
-                                            autoCapitalize = "off"
-                                            autoCorrect = "off"
-                                            wrap = "off"
-                                            spellCheck = false
-
-                                            onChange = { event ->
-                                                run {
-                                                    val target = event.target as HTMLTextAreaElement
-                                                    target.style.height = "auto"
-                                                    target.style.height = "${
-                                                        max(
-                                                            min(target.scrollHeight.px, Sizes.Editor.MaxHeight),
-                                                            Sizes.Editor.StandardHeight
-                                                        )
-                                                    }"
+                                            commonButton {
+                                                text = fileButtonName ?: "load file"
+                                                onClick = {
+                                                    refFileInput.current?.click()
                                                 }
                                             }
                                         }
 
-                                    }
-
-                                    // submit button
-                                    div {
-                                        css {
-                                            display = Display.flex
-                                            flexDirection = FlexDirection.row
-                                        }
+                                        //text field
                                         div {
                                             css {
                                                 display = Display.flex
-                                                justifyContent = JustifyContent.center
-                                                alignItems = AlignItems.center
-
-                                                borderRadius = Sizes.Button.Height / 2
-                                                height = Sizes.Button.Height
-
-                                                background = Pallete.Web.Light
-                                                border = Sizes.Button.Border
-                                                borderStyle = LineStyle.solid
-                                                borderColor = Pallete.Web.Button.Border
-                                                cursor = Cursor.pointer
+                                                flexDirection = FlexDirection.column
+                                                borderRadius = Sizes.BoxBorderRadius
+                                                backgroundColor = Pallete.Web.SecondLight
+                                                alignItems = AlignItems.start
+                                                width = Sizes.TaskStatement.Width - 4 * Sizes.RegularMargin
+                                                padding = Sizes.RegularMargin
                                             }
 
-                                            // submission
-                                            onClick = { e ->
-                                                if (canSubmit) {
-                                                    canSubmit = false
-                                                    val submission = SubmitRequest(
-                                                        taskId, refEditor.current?.value ?: "", language
-                                                    )
-                                                    mainScope.launch {
-                                                        val id = withAuth { access ->
-                                                            SubmissionApi.submit(access, submission)
-                                                        }.let {
-                                                            if (it.status != HttpStatusCode.OK) {
-                                                                null
-                                                            } else {
-                                                                it.body<Int>()
-                                                            }
-                                                        }
+                                            textarea {
+                                                ref = refEditor
+                                                className = ClassName("editor")
+                                                autoCapitalize = "off"
+                                                autoCorrect = "off"
+                                                wrap = "off"
+                                                spellCheck = false
 
-                                                        if (id == null) {
-                                                            // invalid submission
-                                                        } else {
-                                                            SubmissionApi.getSubmissionView(id).let {
-                                                                if (it.status == HttpStatusCode.OK) {
-                                                                    handleSubmit(it.body())
-                                                                }
-                                                            }
-                                                        }
-                                                        canSubmit = true
+                                                onChange = { event ->
+                                                    run {
+                                                        val target = event.target as HTMLTextAreaElement
+                                                        target.style.height = "auto"
+                                                        target.style.height = "${
+                                                            max(
+                                                                min(target.scrollHeight.px, Sizes.Editor.MaxHeight),
+                                                                Sizes.Editor.StandardHeight
+                                                            )
+                                                        }"
                                                     }
                                                 }
                                             }
 
-                                            textFrame {
-                                                text = if (canSubmit) "submit" else "sending..."
-                                                margins = listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin)
+                                        }
+
+                                        // submit button
+                                        div {
+                                            css {
+                                                display = Display.flex
+                                                flexDirection = FlexDirection.row
+                                            }
+                                            div {
+                                                css {
+                                                    display = Display.flex
+                                                    justifyContent = JustifyContent.center
+                                                    alignItems = AlignItems.center
+
+                                                    borderRadius = Sizes.Button.Height / 2
+                                                    height = Sizes.Button.Height
+
+                                                    background = Pallete.Web.Light
+                                                    border = Sizes.Button.Border
+                                                    borderStyle = LineStyle.solid
+                                                    borderColor = Pallete.Web.Button.Border
+                                                    cursor = Cursor.pointer
+                                                }
+
+                                                // submission
+                                                onClick = { e ->
+                                                    if (canSubmit) {
+                                                        canSubmit = false
+                                                        val submission = SubmitRequest(
+                                                            taskId, refEditor.current?.value ?: "", language
+                                                        )
+                                                        mainScope.launch {
+                                                            val id = withAuth { access ->
+                                                                SubmissionApi.submit(access, submission)
+                                                            }.let {
+                                                                if (it.status != HttpStatusCode.OK) {
+                                                                    null
+                                                                } else {
+                                                                    it.body<Int>()
+                                                                }
+                                                            }
+
+                                                            if (id == null) {
+                                                                // invalid submission
+                                                            } else {
+                                                                SubmissionApi.getSubmissionView(id).let {
+                                                                    if (it.status == HttpStatusCode.OK) {
+                                                                        handleSubmit(it.body())
+                                                                    }
+                                                                }
+                                                            }
+                                                            canSubmit = true
+                                                        }
+                                                    }
+                                                }
+
+                                                textFrame {
+                                                    text = if (canSubmit) "submit" else "sending..."
+                                                    margins =
+                                                        listOf(0.px, 0.px, Sizes.RegularMargin, Sizes.RegularMargin)
+                                                }
                                             }
                                         }
-                                    }
 
-                                    // lang list context menu
-                                    div {
-                                        css {
-                                            position = Position.absolute
-                                            top = 4 * Sizes.RegularMargin + Sizes.Button.Height + Sizes.Font.Regular
-                                            left = Sizes.RegularMargin
-                                            visibility = Visibility.hidden
-                                            outline = 0.px
-                                        }
-
-                                        tabIndex = 0
-
-                                        ref = refLanguageListMenu
-
-                                        langItemList {
-                                            ref = refLanguageList
-                                            items = enumValues<Language>().toList().map { Pair(it.text, it) }
-                                            onClickCallback = { item ->
-                                                language = item
-                                                refLanguageListMenu.current?.style?.visibility = "hidden"
+                                        // lang list context menu
+                                        div {
+                                            css {
+                                                position = Position.absolute
+                                                top = 4 * Sizes.RegularMargin + Sizes.Button.Height + Sizes.Font.Regular
+                                                left = Sizes.RegularMargin
+                                                visibility = Visibility.hidden
+                                                outline = 0.px
                                             }
-                                        }
 
-                                        onFocus = { e ->
-                                            refLanguageList.current?.focus()
-                                            e.stopPropagation()
-                                        }
+                                            tabIndex = 0
 
-                                        onClick = { e ->
-                                            e.stopPropagation()
+                                            ref = refLanguageListMenu
+
+                                            langItemList {
+                                                ref = refLanguageList
+                                                items = enumValues<Language>().toList().map { Pair(it.text, it) }
+                                                onClickCallback = { item ->
+                                                    language = item
+                                                    refLanguageListMenu.current?.style?.visibility = "hidden"
+                                                }
+                                            }
+
+                                            onFocus = { e ->
+                                                refLanguageList.current?.focus()
+                                                e.stopPropagation()
+                                            }
+
+                                            onClick = { e ->
+                                                e.stopPropagation()
+                                            }
                                         }
                                     }
                                 }
@@ -797,6 +799,7 @@ private val TaskPage = FC<Props> { props ->
             else -> UserButtonType.UserPage
         }
         id = userId
+        userName = userInfo?.realName ?: userInfo?.login ?: "unknown"
     }
 
     val hideContext: (Event?) -> Unit = {

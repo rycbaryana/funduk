@@ -77,9 +77,11 @@ suspend fun withAuth(block: suspend (String) -> HttpResponse): HttpResponse {
 
     val rep = block(token)
 
+    println(rep)
     return when (rep.status) {
         HttpStatusCode.Unauthorized -> {
             token = AuthenticationApi.refresh()
+            println("refresh $token")
             accessToken = token
             if (token == null) {
                 return DummyResponse(HttpStatusCode.Unauthorized)

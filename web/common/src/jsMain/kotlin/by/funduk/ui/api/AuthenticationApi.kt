@@ -39,6 +39,30 @@ suspend fun AuthenticationApi.logIn(username: String, password: String): String?
     return token?.accessToken
 }
 
+suspend fun AuthenticationApi.logOut() {
+    val token: AccessTokenResponse? = window.fetch(
+        "$kApiAddress/auth/logout",
+        RequestInit(
+            method = "POST",
+            credentials = RequestCredentials.INCLUDE,
+            headers = json(
+                "Content-Type" to "application/json",
+                "Accept" to "application/json"
+            )
+        )
+    ).then { response ->
+        if (response.ok) {
+            response.text()
+        } else {
+            Promise.reject(Exception("bad request"))
+        }
+    }.then {
+        Json.decodeFromString<AccessTokenResponse>(it as String)
+    }.catch {
+        null
+    }.await()
+}
+
 suspend fun AuthenticationApi.Me(): Int? {
     val id: Int? = window.fetch(
         "$kApiAddress/me",
@@ -67,7 +91,7 @@ suspend fun AuthenticationApi.Me(): Int? {
 
 suspend fun AuthenticationApi.refresh(): String? {
     val token: AccessTokenResponse? = window.fetch(
-        "$kApiAddress/auth/login",
+        "$kApiAddress/auth/refresh",
         RequestInit(
             method = "GET",
             credentials = RequestCredentials.INCLUDE,

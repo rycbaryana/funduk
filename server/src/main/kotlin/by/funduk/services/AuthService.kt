@@ -20,7 +20,7 @@ object AuthService {
     val verifier: JWTVerifier =
         with(AuthConfig) { JWT.require(Algorithm.HMAC256(secret)).withAudience(audience).withIssuer(issuer).build() }
 
-    fun createAccessToken(userId: Int): String = createToken(userId, 86_400_000)
+    fun createAccessToken(userId: Int): String = createToken(userId, 60_000)
 
     suspend fun createRefreshToken(userId: Int): String = createToken(userId, 86_400_000).also {
         registerRefreshToken(userId, it)

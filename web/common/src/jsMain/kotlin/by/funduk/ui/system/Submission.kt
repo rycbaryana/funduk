@@ -89,7 +89,7 @@ val submissionView = FC<SubmissionViewProps> { props ->
         var doWriteMemAndTime = false
 
         if (status != null) {
-            if (status != Status.Fail && status != Status.Running) {
+            if (status != Status.Fail && status != Status.Running && status != Status.Queued) {
                 doWriteMemAndTime = true;
             }
         }
@@ -149,7 +149,7 @@ val submissionView = FC<SubmissionViewProps> { props ->
             }
             var stat_text = status?.name ?: "in queue"
 
-            if (status != null && status != Status.Fail && status != Status.OK) {
+            if (status != null && status != Status.Fail && status != Status.OK && status != Status.Queued) {
                 stat_text += " ${props.submission?.testInfo?.test}"
             }
 

@@ -112,7 +112,7 @@ val taskView = FC<TaskViewProps> { props ->
                     justifyContent = JustifyContent.center
                     alignItems = AlignItems.center
 
-                    val back = props.task.userStatus?.let { colorOfStatus[it] } ?: NamedColor.transparent
+                    val back = props.task.userStatus?.status?.let { colorOfStatus[it] } ?: NamedColor.transparent
                     background = back
                 }
 
