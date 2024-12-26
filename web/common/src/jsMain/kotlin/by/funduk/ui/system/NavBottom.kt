@@ -26,7 +26,7 @@ external interface NavProps : Props {
     var page: NavPage?
     var user: UserButtonType
     var userName: String
-    var userId: Int?
+    var id: Int?
 }
 
 val nav = FC<NavProps> { props ->
@@ -123,7 +123,7 @@ val nav = FC<NavProps> { props ->
                     textDecoration = TextDecoration.solid
                 }
                 href =
-                    if (props.user == UserButtonType.LogIn) "/authenticate" else if (props.user == UserButtonType.LogOut) "/logout" else "/user/${props.userId}"
+                    if (props.user == UserButtonType.LogIn) "/authenticate" else if (props.user == UserButtonType.LogOut) "/logout" else "/user/${props.id}"
                 div {
                     css {
                         display = Display.flex

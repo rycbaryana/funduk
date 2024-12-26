@@ -19,6 +19,7 @@ import web.cssom.*
 import by.funduk.model.*
 import by.funduk.ui.api.InitPage
 import by.funduk.ui.api.logIn
+import by.funduk.ui.api.setToLocalStorage
 import by.funduk.ui.general.*
 import by.funduk.ui.system.*
 import io.ktor.client.call.*
@@ -167,6 +168,7 @@ private val LogInPage = FC<Props> { props ->
                                         if (token == null) {
                                             loginNotification = "invalid login or password"
                                         } else {
+                                            setToLocalStorage(token)
                                             AuthenticationApi.me(token).let {
                                                 if (it.status == HttpStatusCode.OK) {
                                                     window.location.href = "/user/${it.body<Int>()}"

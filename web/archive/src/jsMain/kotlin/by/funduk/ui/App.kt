@@ -70,6 +70,7 @@ private val Archive = FC<Props> { _ ->
                 null -> UserButtonType.LogIn
                 else -> UserButtonType.UserPage
             }
+            id = userId
         }
     }
 }

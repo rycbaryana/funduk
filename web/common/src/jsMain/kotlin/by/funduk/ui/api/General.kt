@@ -58,8 +58,14 @@ class DummyResponse(
 
 suspend fun InitPage() {
     accessToken = GetFromLocalStorage()
+    println("getting from local storage $accessToken")
     if (accessToken == null) {
-        accessToken = AuthenticationApi.refresh()
+        val token = AuthenticationApi.refresh()
+        println("refresh $token")
+        accessToken = token
+        if (token != null) {
+            setToLocalStorage(token)
+        }
     }
 }
 
@@ -78,6 +84,7 @@ suspend fun withAuth(block: suspend (String) -> HttpResponse): HttpResponse {
             if (token == null) {
                 return DummyResponse(HttpStatusCode.Unauthorized)
             }
+            println("setting to local storage $token")
             setToLocalStorage(token)
             block(token)
         }

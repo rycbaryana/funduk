@@ -135,6 +135,7 @@ private val TaskPage = FC<Props> { props ->
     val refEditor = useRef<HTMLTextAreaElement>(null)
 
     val (submissionViews, setSubmissionViews) = useState<List<SubmissionView>>(mutableListOf())
+    var userId by useState<Int?>(null)
 
     fun handleSubmit(view: SubmissionView) {
         setSubmissionViews {
@@ -175,7 +176,6 @@ private val TaskPage = FC<Props> { props ->
 
             var textOnNull by useState("Loading task...")
             var task by useState<Task?>(null)
-            var userId by useState<Int?>(null)
 
             // preparations
             useEffectOnce {
@@ -198,6 +198,8 @@ private val TaskPage = FC<Props> { props ->
                             null
                         }
                     }
+
+                    println(id)
 
                     userId = id
 
@@ -518,13 +520,18 @@ private val TaskPage = FC<Props> { props ->
                             div {
                                 id = "submit"
                                 css {
-                                    display = Display.flex
-                                    position = Position.relative
-                                    flexDirection = FlexDirection.column
-                                    borderRadius = Sizes.BoxBorderRadius
-                                    backgroundColor = Pallete.Web.Light
-                                    alignItems = AlignItems.start
-                                    width = Sizes.TaskStatement.Width
+                                    if (userId == null) {
+                                        visibility = Visibility.hidden
+                                        height = 0.px
+                                    } else {
+                                        display = Display.flex
+                                        position = Position.relative
+                                        flexDirection = FlexDirection.column
+                                        borderRadius = Sizes.BoxBorderRadius
+                                        backgroundColor = Pallete.Web.Light
+                                        alignItems = AlignItems.start
+                                        width = Sizes.TaskStatement.Width
+                                    }
                                 }
 
                                 // box name
@@ -539,19 +546,14 @@ private val TaskPage = FC<Props> { props ->
                                     var fileButtonName by useState<String?>(null)
                                     var language by useState(Language.entries[0])
                                     css {
-                                        if (userId == null) {
-                                            visibility = Visibility.hidden
-                                            height = 0.px
-                                        } else {
-                                            display = Display.flex
-                                            flexDirection = FlexDirection.column
-                                            alignContent = AlignContent.start
-                                            gap = Sizes.SmallMargin
-                                            margin = Sizes.RegularMargin
-                                            marginTop = 0.px
-                                            width = 100.pct
-                                            height = 100.pct
-                                        }
+                                        display = Display.flex
+                                        flexDirection = FlexDirection.column
+                                        alignContent = AlignContent.start
+                                        gap = Sizes.SmallMargin
+                                        margin = Sizes.RegularMargin
+                                        marginTop = 0.px
+                                        width = 100.pct
+                                        height = 100.pct
                                     }
 
                                     // head
@@ -788,10 +790,11 @@ private val TaskPage = FC<Props> { props ->
     }
 
     nav {
-        user = when(userId) {
+        user = when (userId) {
             null -> UserButtonType.LogIn
             else -> UserButtonType.UserPage
         }
+        id = userId
     }
 
     val hideContext: (Event?) -> Unit = {

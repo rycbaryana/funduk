@@ -41,16 +41,16 @@ enum class ContentType {
 
 var mainScope = MainScope()
 
-var userId: Int? = null
+var currentUserId: Int? = null
 
-private val LogInPage = FC<Props> { props ->
-    var currentUserId by useState<Int?>(null)
+private val UserPage = FC<Props> { props ->
+    var userId by useState<Int?>(null)
     var contentType by useState<ContentType>(ContentType.General)
 
     useEffectOnce {
         mainScope.launch {
             InitPage()
-            currentUserId = withAuth { access ->
+            userId = withAuth { access ->
                 AuthenticationApi.me(access)
             }.let {
                 if (it.status == HttpStatusCode.OK) {
@@ -202,17 +202,19 @@ private val LogInPage = FC<Props> { props ->
     }
 
     nav {
-        user = when (userId) {
-            null -> UserButtonType.LogIn
+        user = when {
+            userId == null -> UserButtonType.LogIn
+            (currentUserId == userId) -> UserButtonType.UserPage
             else -> UserButtonType.LogOut
         }
+        id = userId
     }
 }
 
 fun start() {
-    userId = window.location.href.split("/").lastOrNull()?.toIntOrNull()
+    currentUserId = window.location.href.split("/").lastOrNull()?.toIntOrNull()
     val container = document.getElementById("root") ?: error("Couldn't find root container!")
-    createRoot(container).render(LogInPage.create())
+    createRoot(container).render(UserPage.create())
 }
 
 fun main() {
