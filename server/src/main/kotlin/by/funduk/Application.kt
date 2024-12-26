@@ -7,8 +7,8 @@ import by.funduk.plugins.configureDatabase
 import by.funduk.plugins.configureSwagger
 import by.funduk.routes.authRoutes
 import by.funduk.routes.submitRoutes
+import by.funduk.routes.userRoutes
 import by.funduk.services.*
-import by.funduk.utils.extractUserId
 import by.funduk.utils.hashPassword
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.*
@@ -110,6 +110,7 @@ fun Application.module() {
             taskRoutes()
             submitRoutes()
             authRoutes()
+            userRoutes()
         }
         webSocket("/notifications/{task_id}") {
             val taskId = call.parameters["task_id"]!!.toInt()
@@ -127,19 +128,6 @@ fun Application.module() {
             }.also {
                 NotificationService.unsubscribe(client)
             }
-        }
-
-        authenticate("auth-jwt") {
-            get("/me") {
-                val principal = call.principal<JWTPrincipal>()
-                principal?.let {
-                    val userId = extractUserId(it.payload)
-                    call.respondText {
-                        "Hello, ${UserService.findByUserId(userId)?.username}"
-                    }
-                } ?: call.respond(HttpStatusCode.Unauthorized)
-            }
-
         }
     }
 }
