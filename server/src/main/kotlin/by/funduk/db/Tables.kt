@@ -1,16 +1,23 @@
 package by.funduk.db
 
+import by.funduk.model.TestCase
+import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.javatime.date
+import org.jetbrains.exposed.sql.json.json
+
+val format = Json { prettyPrint = true }
 
 object Tasks : IntIdTable("tasks") {
     val name = varchar("name", 50)
     val statement = text("statement")
     val rank = integer("rank")
     val solvedCount = integer("solved").default(0)
+    val samples = json<Array<TestCase>>("samples", format).nullable()
+    val notes = text("notes").nullable()
 }
 
 object Tags : IntIdTable("tags") {

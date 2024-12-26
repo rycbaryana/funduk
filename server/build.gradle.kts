@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.ktor.serialization.json)
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.json)
     implementation(libs.exposed.dao)
     implementation(libs.exposed.time)
     implementation(libs.kotlinx.datetime)

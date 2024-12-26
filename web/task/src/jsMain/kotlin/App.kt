@@ -378,63 +378,67 @@ private val TaskPage = FC<Props> { props ->
                             name = "output"
                             text = "Print x ^ 3 in one string."
                         }
-
-                        //samples
-                        div {
-                            key = "samples"
-                            css {
-                                display = Display.flex
-                                flexDirection = FlexDirection.column
-                                borderRadius = Sizes.BoxBorderRadius
-                                backgroundColor = Pallete.Web.Light
-                                alignItems = AlignItems.start
-                                width = Sizes.TaskStatement.Width
-                            }
-
-                            // box name
-                            textFrame {
-                                text = "samples"
-                                bold = true
-                            }
-
+                        if (task?.samples != null) {
+                            //samples
                             div {
+                                key = "samples"
                                 css {
                                     display = Display.flex
                                     flexDirection = FlexDirection.column
-                                    margin = Sizes.RegularMargin
-                                    gap = Sizes.RegularGap
-                                    width = 100.pct - Sizes.RegularGap
+                                    borderRadius = Sizes.BoxBorderRadius
+                                    backgroundColor = Pallete.Web.Light
+                                    alignItems = AlignItems.start
+                                    width = Sizes.TaskStatement.Width
                                 }
 
-                                //sample row
+                                // box name
+                                textFrame {
+                                    text = "samples"
+                                    bold = true
+                                }
+
                                 div {
                                     css {
                                         display = Display.flex
-                                        flexDirection = FlexDirection.row
-                                        width = 100.pct
+                                        flexDirection = FlexDirection.column
+                                        margin = Sizes.RegularMargin
                                         gap = Sizes.RegularGap
+                                        width = 100.pct - Sizes.RegularGap
                                     }
 
-                                    // input
-                                    sampleField {
-                                        name = "input"
-                                        text = "3"
-                                    }
+                                    for (sample in task!!.samples!!) {
+                                        div {
+                                            css {
+                                                display = Display.flex
+                                                flexDirection = FlexDirection.row
+                                                width = 100.pct
+                                                gap = Sizes.RegularGap
+                                            }
 
-                                    // output
-                                    sampleField {
-                                        name = "output"
-                                        text = "27"
+                                            // input
+                                            sampleField {
+                                                name = "input"
+                                                text = sample.input
+                                            }
+
+                                            // output
+                                            sampleField {
+                                                name = "output"
+                                                text = sample.output
+                                            }
+                                        }
                                     }
                                 }
-
                             }
                         }
 
-                        textFieldWithName {
-                            name = "note"
-                            text = "Optional field with notes and clues."
+                        if (task?.notes != null) {
+                            textFieldWithName {
+                                name = "note"
+                                text = task!!.notes!!
+                            }
                         }
+
 
                         //submit + submissions
                         div {

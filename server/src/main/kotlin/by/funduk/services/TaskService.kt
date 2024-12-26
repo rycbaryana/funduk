@@ -21,7 +21,10 @@ object TaskService {
                         it[Tasks.id].value,
                         it[Tasks.name], it[Tasks.statement],
                         Rank.entries[it[Tasks.rank]],
-                        getTags(it[Tasks.id].value)
+                        getTags(it[Tasks.id].value),
+                        it[Tasks.solvedCount],
+                        it[Tasks.samples]?.toList(),
+                        it[Tasks.notes]
                     )
                 }
         }
@@ -43,6 +46,8 @@ object TaskService {
             it[statement] = task.statement
             it[rank] = task.rank.ordinal
             it[solvedCount] = task.solvedCount
+            it[samples] = task.samples?.toTypedArray()
+            it[notes] = task.notes
         }
         task.tags.forEach { tag ->
             val tagId = Tags.select(Tags.id).where { name eq tag.name }
@@ -67,7 +72,9 @@ object TaskService {
                     it[Tasks.statement],
                     Rank.entries[it[Tasks.rank]],
                     getTags(it[Tasks.id].value),
-                    it[Tasks.solvedCount]
+                    it[Tasks.solvedCount],
+                    it[Tasks.samples]?.toList(),
+                    it[Tasks.notes]
                 )
             }
             .singleOrNull()
