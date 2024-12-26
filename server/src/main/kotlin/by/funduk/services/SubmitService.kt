@@ -85,6 +85,13 @@ object SubmitService {
             }
     }
 
+    suspend fun getUserSubmissionViews(userId: Int, count: Int, offset: Int): List<SubmissionView> = query {
+        (Submissions innerJoin Tasks innerJoin Users).selectAll().limit(count).offset(offset.toLong())
+            .orderBy(Submissions.submitTime to SortOrder.DESC).where { Submissions.userId eq userId }.mapNotNull {
+                getViewFromRow(it)
+            }
+    }
+
     private fun getViewFromRow(row: ResultRow): SubmissionView {
         val status = Status.valueOf(row[Submissions.status])
         val test = if (status == Status.Running) {
@@ -113,5 +120,19 @@ object SubmitService {
         return query {
             Submissions.deleteWhere { Submissions.id eq id }
         } > 0
+    }
+
+    suspend fun getTaskStatus(taskId: Int, userId: Int): TestInfo? = query {
+        if (hasOkSubmission(userId, taskId)) {
+            TestInfo(Status.OK)
+        } else {
+            getSubmissionViews(taskId, userId, 1, 0).getOrNull(0)?.testInfo
+        }
+    }
+
+    suspend fun hasOkSubmission(taskId: Int, userId: Int): Boolean = query {
+        !Submissions.selectAll()
+            .where { (Submissions.userId eq userId) and (Submissions.taskId eq taskId) and (Submissions.status eq Status.OK.toString()) }
+            .empty()
     }
 }

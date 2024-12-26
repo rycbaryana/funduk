@@ -8,6 +8,7 @@ import by.funduk.utils.checkPassword
 import by.funduk.utils.hashPassword
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -50,6 +51,13 @@ fun Route.authRoutes() {
                 call.response.cookies.append(REFRESH_TOKEN_COOKIE, refresh, extensions = mapOf("SameSite" to "None"), path = "/", secure = true, httpOnly = true)
                 call.respond(HttpStatusCode.OK, AccessTokenResponse(access))
             } ?: call.respond(HttpStatusCode.Unauthorized)
+        }
+        post("/logout") {
+            val refreshToken = call.request.cookies[REFRESH_TOKEN_COOKIE]
+            refreshToken?.let {
+                AuthService.invalidateRefreshToken(it)
+            }
+            call.respond(HttpStatusCode.OK)
         }
     }
 }

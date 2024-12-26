@@ -17,17 +17,14 @@ object TestService {
     private val testInfos = Collections.synchronizedMap(mutableMapOf<Int, TestInfo>())
 
     fun test(submission: Submission) = testingScope.launch {
+        val tempDir = createTempDirectory("task${submission.taskId}").toFile()
         try {
             beginTesting(submission)
-
-            val tempDir = createTempDirectory("task${submission.taskId}").toFile()
-            println(tempDir)
 
             val sourceFile = File(tempDir, "source.${submission.language.extensions[0]}")
             sourceFile.writeText(submission.code)
 
             val testCases = getTestCases(submission.taskId)
-            val mem = (Runtime.getRuntime().totalMemory())
             when (submission.language) {
                 Language.CPP23_GCC14 -> {
                     updateTestInfo(submission, TestInfo(status = Status.Running, test = 1))
@@ -42,12 +39,12 @@ object TestService {
                             .redirectOutput(ProcessBuilder.Redirect.PIPE)
                             .start()
                         process.outputStream.bufferedWriter().use {
-                            it.write(input.toString())
+                            it.write(input)
                             it.flush()
                         }
                         process.waitFor()
                         val output = process.inputStream.bufferedReader().readText().trim()
-                        if (expected.toString() != output) {
+                        if (expected != output) {
                             println("Expected $expected, got $output")
                             updateTestInfo(submission, TestInfo(status = Status.WA, test = i + 1))
                             break
@@ -59,6 +56,7 @@ object TestService {
                 updateTestInfo(submission, TestInfo(status = Status.OK))
             }
         } finally {
+            tempDir.deleteOnExit()
             endTesting(submission)
         }
 

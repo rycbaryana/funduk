@@ -1,10 +1,7 @@
 package by.funduk.services
 
-import by.funduk.db.Tags
+import by.funduk.db.*
 import by.funduk.db.Tags.name
-import by.funduk.db.Tasks
-import by.funduk.db.TasksTags
-import by.funduk.db.query
 import by.funduk.model.Task
 import by.funduk.model.Rank
 import by.funduk.model.Tag
@@ -30,11 +27,15 @@ object TaskService {
         }
     }
 
-    suspend fun getViews(count: Int, offset: Int = 0): List<TaskView> = query {
+    suspend fun getViews(count: Int, offset: Int = 0, userId: Int?): List<TaskView> = query {
         Tasks.selectAll().limit(count).offset(offset.toLong()).map {
             TaskView(
                 it[Tasks.id].value,
-                it[Tasks.name], Rank.entries[it[Tasks.rank]], getTags(it[Tasks.id].value)
+                it[Tasks.name],
+                Rank.entries[it[Tasks.rank]],
+                getTags(it[Tasks.id].value),
+                it[Tasks.solvedCount],
+                userId?.let { userId -> SubmitService.getTaskStatus(it[Tasks.id].value, userId) }
             )
         }
     }
@@ -92,5 +93,21 @@ object TaskService {
         return query {
             Tasks.deleteWhere { Tasks.id eq id }
         } > 0
+    }
+
+    suspend fun getTasksUserStarted(userId: Int): List<TaskView> = query {
+        val tasksStarted =
+            Submissions.selectAll().where { Submissions.userId eq userId }.map { it[Submissions.taskId] }.distinct()
+
+        Tasks.selectAll().where { Tasks.id inList tasksStarted }.map {
+            TaskView(
+                it[Tasks.id].value,
+                it[Tasks.name],
+                Rank.entries[it[Tasks.rank]],
+                getTags(it[Tasks.id].value),
+                it[Tasks.solvedCount],
+                SubmitService.getTaskStatus(it[Tasks.id].value, userId)
+            )
+        }
     }
 }

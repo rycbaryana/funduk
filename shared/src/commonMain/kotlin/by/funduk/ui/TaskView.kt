@@ -1,9 +1,6 @@
 package by.funduk.ui
 
-import by.funduk.model.Rank
-import by.funduk.model.Status
-import by.funduk.model.Tag
-import by.funduk.model.Task
+import by.funduk.model.*
 import kotlinx.serialization.Serializable
 
 
@@ -14,7 +11,7 @@ data class TaskView(
     val rank: Rank?, // task may have no rank
     val tags: List<Tag>,
     val solvedCount: Int = 0,
-    val userStatus: Status? = null
+    val userStatus: TestInfo? = null
 ) {
     constructor(task: Task) : this(
         task.id ?: throw IllegalArgumentException("Task ID cannot be null"),

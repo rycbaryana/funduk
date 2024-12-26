@@ -9,6 +9,8 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.server.auth.jwt.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.upsert
 import java.util.*
@@ -51,6 +53,10 @@ object AuthService {
             }
         }
         return null
+    }
+
+    suspend fun invalidateRefreshToken(refreshToken: String) = query {
+        RefreshTokens.deleteWhere { token eq refreshToken }
     }
 
 

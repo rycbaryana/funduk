@@ -1,6 +1,7 @@
 package by.funduk.routes
 
 import by.funduk.model.UserInfo
+import by.funduk.services.SubmitService
 import by.funduk.services.UserService
 import by.funduk.utils.extractUserId
 import io.ktor.http.*
@@ -43,6 +44,19 @@ fun Route.userRoutes() {
                 } else {
                     call.respond(HttpStatusCode.Forbidden)
                 }
+            }
+        }
+
+        get("/submissions") {
+            val id = call.parameters["id"]!!.toInt()
+            val user = UserService.findByUserId(id)
+            if (user != null) {
+                val count = call.request.queryParameters["count"]?.toInt() ?: Int.MAX_VALUE
+                val offset = call.request.queryParameters["offset"]?.toInt() ?: 0
+                val submissions = SubmitService.getUserSubmissionViews(id, count, offset)
+                call.respond(HttpStatusCode.OK, submissions)
+            } else {
+                call.respond(HttpStatusCode.NotFound)
             }
         }
 
