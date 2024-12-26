@@ -73,6 +73,7 @@ object UserService {
     suspend fun updateUserInfo(userId: Int, info: UserInfo) = query {
         Users.update(where = {Users.id eq userId}) {
             with (info) {
+                it[Users.username] = username
                 it[Users.realName] = realName
                 it[Users.birthDate] = birthDate?.toJavaLocalDate()
                 it[Users.about] = about
