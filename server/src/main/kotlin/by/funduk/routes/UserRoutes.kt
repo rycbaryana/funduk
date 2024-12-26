@@ -2,6 +2,7 @@ package by.funduk.routes
 
 import by.funduk.model.UserInfo
 import by.funduk.services.SubmitService
+import by.funduk.services.TaskService
 import by.funduk.services.UserService
 import by.funduk.utils.extractUserId
 import io.ktor.http.*
@@ -55,6 +56,16 @@ fun Route.userRoutes() {
                 val offset = call.request.queryParameters["offset"]?.toInt() ?: 0
                 val submissions = SubmitService.getUserSubmissionViews(id, count, offset)
                 call.respond(HttpStatusCode.OK, submissions)
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
+        }
+        get("/startedTasks") {
+            val id = call.parameters["id"]!!.toInt()
+            val user = UserService.findByUserId(id)
+            if (user != null) {
+                val tasks = TaskService.getTasksUserStarted(id)
+                call.respond(HttpStatusCode.OK, tasks)
             } else {
                 call.respond(HttpStatusCode.NotFound)
             }

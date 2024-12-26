@@ -96,6 +96,7 @@ object TaskService {
     }
 
     suspend fun getTasksUserStarted(userId: Int): List<TaskView> = query {
+
         val tasksStarted =
             Submissions.selectAll().where { Submissions.userId eq userId }.map { it[Submissions.taskId] }.distinct()
 
