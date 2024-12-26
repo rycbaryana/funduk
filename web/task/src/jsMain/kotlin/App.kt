@@ -219,18 +219,16 @@ private val TaskPage = FC<Props> { props ->
                     }
                     document.title = loaded_task?.name ?: "unknown task"
                     task = loaded_task
-                }
-            }
-            useEffectOnce {
-                mainScope.launch(Dispatchers.Main) {
-                    SubmissionApi.connectToTaskWebSocket(taskId) {
-                        if (it is StatusMessage) {
-                            handleStatusMessage(it)
+
+                    mainScope.launch(Dispatchers.Main) {
+                        SubmissionApi.connectToTaskWebSocket(taskId, id ?: 0) {
+                            if (it is StatusMessage) {
+                                handleStatusMessage(it)
+                            }
                         }
                     }
                 }
             }
-
             div {
                 css {
                     display = Display.flex

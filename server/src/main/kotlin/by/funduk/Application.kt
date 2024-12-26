@@ -27,7 +27,10 @@ import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.consume
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -113,7 +116,12 @@ fun Application.module() {
         }
         webSocket("/notifications/{task_id}") {
             val taskId = call.parameters["task_id"]!!.toInt()
-            val userId = 1
+
+            val frame = incoming.receive() as Frame.Text
+            val message = Json.decodeFromString<UserMessage>(frame.readText())
+
+            val userId = message.userId
+
             val client = NotificationClient(taskId, userId, this)
             NotificationService.subscribe(client)
             runCatching {

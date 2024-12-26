@@ -29,7 +29,9 @@ object TestService {
             val testCases = getTestCases(submission.taskId)
             val mem = (Runtime.getRuntime().totalMemory())
             when (submission.language) {
-                Language.CPP23_GCC14 -> TODO()
+                Language.CPP23_GCC14 -> {
+                    updateTestInfo(submission, TestInfo(status = Status.Running, test = 1))
+                }
                 Language.Python3 -> {
                     for ((i, testCase) in testCases.withIndex()) {
                         val (input, expected) = testCase

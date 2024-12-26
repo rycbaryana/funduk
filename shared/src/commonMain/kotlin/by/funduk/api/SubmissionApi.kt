@@ -25,8 +25,9 @@ object SubmissionApi {
         }
     }
 
-    suspend fun connectToTaskWebSocket(id: Int, onReceive: (Message) -> Unit) =
-        client.webSocket("$kServerWebSocketAddress/notifications/$id") {
+    suspend fun connectToTaskWebSocket(taskId: Int, userId: Int, onReceive: (Message) -> Unit) =
+        client.webSocket("$kServerWebSocketAddress/notifications/$taskId") {
+            sendSerialized(UserMessage(userId))
             for (message in incoming) {
                 when (message) {
                     is Frame.Text -> {
