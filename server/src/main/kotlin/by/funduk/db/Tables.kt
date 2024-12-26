@@ -4,6 +4,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.datetime
+import org.jetbrains.exposed.sql.javatime.date
 
 object Tasks : IntIdTable("tasks") {
     val name = varchar("name", 50)
@@ -24,6 +25,12 @@ object TasksTags: Table("tasks_tags") {
 object Users : IntIdTable("users") {
     val username = varchar("username", 50)
     val password = varchar("password", 255)
+    val realName = varchar("real_name", 32).nullable()
+    val birthDate = date("birth_date").nullable()
+    val about = text("about").nullable()
+    val solvedCount = integer("solved_count").default(0)
+    val rating = integer("rating").default(0)
+
 }
 
 object Submissions : IntIdTable("submissions") {
