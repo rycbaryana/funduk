@@ -111,4 +111,12 @@ object TaskService {
             )
         }
     }
+
+    suspend fun incrementSolved(taskId: Int) = query {
+        Tasks.update(where = {Tasks.id eq taskId }) {
+            with (SqlExpressionBuilder) {
+                it.update(solvedCount, solvedCount + 1)
+            }
+        }
+    }
 }

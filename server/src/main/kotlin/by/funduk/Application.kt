@@ -191,6 +191,7 @@ private fun CoroutineScope.populateDatabase() =
         }
         UserService.apply {
             addUser("vlad", hashPassword("1234Debil$"))
+            addUser("kirill", hashPassword("1234Debil$"))
         }
     }
 

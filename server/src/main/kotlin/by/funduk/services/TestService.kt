@@ -53,6 +53,9 @@ object TestService {
                 }
             }
             if (isOk(submission)) {
+                if (!SubmitService.hasOkSubmission(submission.taskId, submission.userId)) {
+                    TaskService.incrementSolved(submission.taskId)
+                }
                 updateTestInfo(submission, TestInfo(status = Status.OK))
             }
         } finally {
