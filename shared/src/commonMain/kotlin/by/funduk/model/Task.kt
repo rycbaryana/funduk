@@ -10,4 +10,6 @@ data class Task(
     val rank: Rank,
     val tags: List<Tag> = listOf(),
     val solvedCount: Int = 0,
+    val samples: List<TestCase>? = null,
+    val notes: String? = null,
 )

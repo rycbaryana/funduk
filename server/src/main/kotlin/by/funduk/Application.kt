@@ -17,7 +17,6 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.engine.*
-import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -140,7 +139,8 @@ private fun CoroutineScope.populateDatabase() =
                     name = "Hello, world!",
                     statement = "Print \"Hello, world!\" to the standard output.",
                     rank = Rank.Calf,
-                    tags = listOf(Tag.Greedy, Tag.TwoSAT)
+                    tags = listOf(Tag.Greedy, Tag.TwoSAT),
+                    notes = "Welcome!"
                 )
             ).let {
                 TestService.apply {
@@ -152,7 +152,8 @@ private fun CoroutineScope.populateDatabase() =
                     name = "x^3",
                     statement = "Write a program that takes an integer input x and prints the result of x ^ 3 to the standard output.",
                     rank = Rank.Cow,
-                    tags = listOf(Tag.DP, Tag.BinSearch)
+                    tags = listOf(Tag.DP, Tag.BinSearch),
+                    samples = listOf(TestCase("2", "8"), TestCase("-1", "-1"))
                 )
             ).let {
                 TestService.apply {
@@ -167,7 +168,9 @@ private fun CoroutineScope.populateDatabase() =
                     name = "Alice and Bob",
                     statement = "Alice has x apples and Bob has y apples. How many apples in total they possess?",
                     rank = Rank.MediumRare,
-                    tags = listOf(Tag.DS, Tag.FFT)
+                    tags = listOf(Tag.DS, Tag.FFT),
+                    notes = "Try using addition",
+                    samples = listOf(TestCase("2 2", "4"))
                 )
             ).let {
                 TestService.apply {
