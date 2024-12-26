@@ -1,7 +1,6 @@
 package by.funduk.ui
 
-import by.funduk.api.TasksApi
-import by.funduk.ui.general.Counts
+import by.funduk.ui.api.InitPage
 import by.funduk.ui.general.Sizes
 import by.funduk.ui.system.NavPage
 import web.dom.document
@@ -19,7 +18,7 @@ import web.cssom.*
 
 import kotlinx.coroutines.*
 
-val main_scope = MainScope()
+val mainScope = MainScope()
 
 private val Archive = FC<Props> { _ ->
     div {
@@ -43,7 +42,7 @@ private val Archive = FC<Props> { _ ->
 
             // taskboard
             taskBoard {
-                scope = main_scope
+                scope = mainScope
             }
         }
         bottom {
@@ -56,6 +55,9 @@ private val Archive = FC<Props> { _ ->
 }
 
 fun start() {
+    mainScope.launch {
+        InitPage()
+    }
     val container = document.getElementById("root") ?: error("Couldn't find root container!")
     createRoot(container).render(Archive.create())
 }

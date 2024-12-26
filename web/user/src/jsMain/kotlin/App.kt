@@ -17,6 +17,7 @@ import web.cssom.*
 import by.funduk.api.TasksApi
 import by.funduk.api.SubmissionApi
 import by.funduk.model.*
+import by.funduk.ui.api.InitPage
 import by.funduk.ui.general.*
 import by.funduk.ui.system.*
 import kotlinx.coroutines.*
@@ -41,13 +42,14 @@ var IsMyAccount = false
 var user: User? = null
 
 private val LogInPage = FC<Props> { props ->
-//    val refAvatar = useRef<HTMLDivElement>(null)
-//
-//    useEffectOnce {
-//        refAvatar.current?.style?.backgroundImage = "/unknown.svg"
-//    }
-    var user by useState<User?>(null)
+    var userId by useState<Int?>(null)
     var contentType by useState<ContentType>(ContentType.General)
+
+    useEffectOnce {
+        mainScope.launch {
+            InitPage()
+        }
+    }
 
     div {
         css {

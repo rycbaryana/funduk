@@ -17,9 +17,11 @@ import web.cssom.px
 import web.cssom.*
 
 import by.funduk.model.*
+import by.funduk.ui.api.InitPage
 import by.funduk.ui.api.logIn
 import by.funduk.ui.general.*
 import by.funduk.ui.system.*
+import io.ktor.http.*
 import js.promise.Promise
 import kotlinx.coroutines.*
 import org.w3c.dom.events.Event
@@ -307,16 +309,16 @@ private val LogInPage = FC<Props> { props ->
                                         mainScope.launch {
                                             val res = AuthenticationApi.register(nick, pass)
 
-                                            when (res) {
-                                                RegisterResult.Registered -> {
+                                            when (res.status) {
+                                                HttpStatusCode.Created -> {
                                                     window.location.href = "/user/$nick"
                                                 }
 
-                                                RegisterResult.AlreadyExist -> {
+                                                HttpStatusCode.Conflict -> {
                                                     registerNotification = "this user already exists"
                                                 }
 
-                                                RegisterResult.UnknownError -> {
+                                                else -> {
                                                     registerNotification = "unknown error, try again later"
                                                 }
                                             }
@@ -444,6 +446,9 @@ private val LogInPage = FC<Props> { props ->
 }
 
 fun start() {
+    mainScope.launch {
+        InitPage()
+    }
     val container = document.getElementById("root") ?: error("Couldn't find root container!")
     createRoot(container).render(LogInPage.create())
 }

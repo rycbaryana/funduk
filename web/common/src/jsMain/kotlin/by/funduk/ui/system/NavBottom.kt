@@ -16,6 +16,12 @@ enum class NavPage {
     Archive
 }
 
+enum class UserButtonType {
+    LogIn,
+    LogOut,
+    UserPage
+}
+
 external interface NavProps : Props {
     var page: NavPage?
 }

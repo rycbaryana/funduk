@@ -17,8 +17,12 @@ import by.funduk.api.TasksApi
 import by.funduk.api.SubmissionApi
 import by.funduk.api.SubmitRequest
 import by.funduk.model.*
+import by.funduk.ui.api.InitPage
+import by.funduk.ui.api.withAuth
 import by.funduk.ui.general.*
 import by.funduk.ui.system.*
+import io.ktor.client.call.*
+import io.ktor.http.*
 import kotlinx.coroutines.*
 import org.w3c.dom.events.Event
 import web.html.HTMLTextAreaElement
@@ -105,7 +109,7 @@ val sampleField = FC<SampleFieldProps> { props ->
                 +"copy"
 
                 onClick = {
-                    window.navigator.clipboard.writeText(props.text);
+                    window.navigator.clipboard.writeText(props.text)
                 }
             }
         }
@@ -170,16 +174,33 @@ private val TaskPage = FC<Props> { props ->
 
             var textOnNull by useState("Loading task...")
             var task by useState<Task?>(null)
+            var userId by useState<Int?>(null)
 
             // preparations
             useEffectOnce {
                 mainScope.launch(Dispatchers.Main) {
-                    val loaded_task = TasksApi.getTask(taskId)
+                    val loaded_task = TasksApi.getTask(taskId).let {
+                        if (it.status == HttpStatusCode.OK) {
+                            it.body<Task>()
+                        } else {
+                            null
+                        }
+                    }
+                    InitPage()
+
+//                    userId =
 
                     if (loaded_task == null) {
                         textOnNull = "We do not recognize this task"
                     } else {
-                        setSubmissionViews(SubmissionApi.getSubmissionViews(taskId, 1))
+                        setSubmissionViews(SubmissionApi.getSubmissionViews(taskId, 1).let {
+                            if (it.status == HttpStatusCode.OK) {
+                                it.body<List<SubmissionView>>()
+                            } else {
+                                listOf()
+                            }
+                        })
+
                     }
                     document.title = loaded_task?.name ?: "unknown task"
                     task = loaded_task
@@ -506,14 +527,19 @@ private val TaskPage = FC<Props> { props ->
                                     var fileButtonName by useState<String?>(null)
                                     var language by useState(Language.entries[0])
                                     css {
-                                        display = Display.flex
-                                        flexDirection = FlexDirection.column
-                                        alignContent = AlignContent.start
-                                        gap = Sizes.SmallMargin
-                                        margin = Sizes.RegularMargin
-                                        marginTop = 0.px
-                                        width = 100.pct
-                                        height = 100.pct
+                                        if (userId == null) {
+                                            visibility = Visibility.hidden
+                                            height = 0.px
+                                        } else {
+                                            display = Display.flex
+                                            flexDirection = FlexDirection.column
+                                            alignContent = AlignContent.start
+                                            gap = Sizes.SmallMargin
+                                            margin = Sizes.RegularMargin
+                                            marginTop = 0.px
+                                            width = 100.pct
+                                            height = 100.pct
+                                        }
                                     }
 
                                     // head
@@ -637,12 +663,24 @@ private val TaskPage = FC<Props> { props ->
                                                         taskId, refEditor.current?.value ?: "", language
                                                     )
                                                     mainScope.launch {
-                                                        val id = SubmissionApi.submit(submission)
+                                                        val id = withAuth { access ->
+                                                            SubmissionApi.submit(access, submission)
+                                                        }.let {
+                                                            if (it.status != HttpStatusCode.OK) {
+                                                                null
+                                                            } else {
+                                                                it.body<Int>()
+                                                            }
+                                                        }
+
                                                         if (id == null) {
                                                             // invalid submission
                                                         } else {
-                                                            val view = SubmissionApi.getSubmissionView(id)
-                                                            handleSubmit(view)
+                                                            SubmissionApi.getSubmissionView(id).let {
+                                                                if (it.status == HttpStatusCode.OK) {
+                                                                    handleSubmit(it.body())
+                                                                }
+                                                            }
                                                         }
                                                         canSubmit = true
                                                     }
@@ -752,8 +790,7 @@ private val TaskPage = FC<Props> { props ->
 }
 
 fun start() {
-    taskId = window.location.href.split("/").lastOrNull()?.toIntOrNull() ?: 2
-
+    taskId = window.location.href.split("/").lastOrNull()?.toIntOrNull() ?: -1
     val container = document.getElementById("root") ?: error("Couldn't find root container!")
     createRoot(container).render(TaskPage.create())
 }

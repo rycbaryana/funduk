@@ -10,6 +10,8 @@ import by.funduk.ui.*
 import react.*
 import react.dom.html.ReactHTML.div
 import emotion.react.*
+import io.ktor.client.call.*
+import io.ktor.http.*
 import web.cssom.*
 import web.html.HTMLDivElement
 
@@ -27,7 +29,13 @@ val taskBoard = FC<TaskBoardProps> { props ->
 
         useEffectOnce {
             props.scope.launch {
-                tasks = TasksApi.getTaskViews(Counts.TaskViewBatchSize, 0)
+                tasks = TasksApi.getTaskViews(Counts.TaskViewBatchSize, 0).let {
+                    if (it.status != HttpStatusCode.OK) {
+                        listOf()
+                    } else {
+                        it.body<List<TaskView>>()
+                    }
+                }
             }
         }
         css {
@@ -135,7 +143,13 @@ val taskBoard = FC<TaskBoardProps> { props ->
                 load_more.current?.attributeStyleMap?.set("visibility", "hidden")
 
                 props.scope.launch {
-                    val batch = TasksApi.getTaskViews(Counts.TaskViewBatchSize, tasks.size)
+                    val batch = TasksApi.getTaskViews(Counts.TaskViewBatchSize, tasks.size).let {
+                        if (it.status != HttpStatusCode.OK) {
+                            listOf()
+                        } else {
+                            it.body<List<TaskView>>()
+                        }
+                    }
                     tasks = tasks + batch
                     if (batch.size == Counts.TaskViewBatchSize) {
                         load_more.current?.attributeStyleMap?.set("visibility", "visible")
