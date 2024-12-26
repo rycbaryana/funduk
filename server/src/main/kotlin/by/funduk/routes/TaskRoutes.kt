@@ -19,11 +19,9 @@ fun Route.taskRoutes() {
             call.respond(TaskService.allTasks())
         }
         get("/views") {
-            val userId: Int? = call.principal<JWTPrincipal>()?.payload?.let {
-                extractUserId(it)
-            }
             val count = call.request.queryParameters["count"]?.toInt() ?: 10
             val offset = call.request.queryParameters["offset"]?.toInt() ?: 0
+            val userId = call.request.queryParameters["userId"]?.toInt()
             val views = TaskService.getViews(count, offset)
             call.respond(views)
         }
