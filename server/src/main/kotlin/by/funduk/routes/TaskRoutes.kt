@@ -22,7 +22,7 @@ fun Route.taskRoutes() {
             val count = call.request.queryParameters["count"]?.toInt() ?: 10
             val offset = call.request.queryParameters["offset"]?.toInt() ?: 0
             val userId = call.request.queryParameters["userId"]?.toInt()
-            val views = TaskService.getViews(count, offset)
+            val views = TaskService.getViews(count, offset, userId)
             call.respond(views)
         }
         get("/{id}") {
