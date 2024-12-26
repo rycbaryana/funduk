@@ -4,8 +4,11 @@ import by.funduk.model.Submission
 import by.funduk.model.Task
 import by.funduk.services.SubmitService
 import by.funduk.services.TaskService
+import by.funduk.utils.extractUserId
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -16,6 +19,9 @@ fun Route.taskRoutes() {
             call.respond(TaskService.allTasks())
         }
         get("/views") {
+            val userId: Int? = call.principal<JWTPrincipal>()?.payload?.let {
+                extractUserId(it)
+            }
             val count = call.request.queryParameters["count"]?.toInt() ?: 10
             val offset = call.request.queryParameters["offset"]?.toInt() ?: 0
             val views = TaskService.getViews(count, offset)

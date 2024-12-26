@@ -27,7 +27,7 @@ object TaskService {
         }
     }
 
-    suspend fun getViews(count: Int, offset: Int = 0, userId: Int?): List<TaskView> = query {
+    suspend fun getViews(count: Int, offset: Int = 0, userId: Int? = null): List<TaskView> = query {
         Tasks.selectAll().limit(count).offset(offset.toLong()).map {
             TaskView(
                 it[Tasks.id].value,
