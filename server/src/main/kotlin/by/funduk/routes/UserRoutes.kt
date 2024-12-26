@@ -31,7 +31,7 @@ fun Route.userRoutes() {
                 call.respond(HttpStatusCode.OK, it)
             } ?: call.respond(HttpStatusCode.NotFound)
         }
-        authenticate {
+        authenticate("auth-jwt") {
             post("/info") {
                 val principal = call.principal<JWTPrincipal>()!!
                 val userId = extractUserId(principal.payload)
