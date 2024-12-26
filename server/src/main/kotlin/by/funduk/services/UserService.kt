@@ -47,6 +47,7 @@ object UserService {
     suspend fun getUserInfo(userId: Int): UserInfo? = query {
         Users.selectAll().where { Users.id eq userId }.mapNotNull {
             UserInfo(
+                it[Users.username],
                 it[Users.realName],
                 it[Users.birthDate]?.toKotlinLocalDate(),
                 it[Users.about],
@@ -59,6 +60,7 @@ object UserService {
     suspend fun getUserInfo(username: String): UserInfo? = query {
         Users.selectAll().where { Users.username eq username }.mapNotNull {
             UserInfo(
+                it[Users.username],
                 it[Users.realName],
                 it[Users.birthDate]?.toKotlinLocalDate(),
                 it[Users.about],
